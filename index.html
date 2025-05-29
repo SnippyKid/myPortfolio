@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SnippyKid | Portfolio</title>
+    <link rel="stylesheet" href="./assets/css/style.css" />
+    <link rel="stylesheet" href="./assets/bootstrap-css/bootstrap.min.css" />
+  </head>
+  <body>
+    <div class="portfolio-hero">
+      <div class="noise"></div>
+      
+      <header>
+        <div class="logo">
+          <span class="logo-text">SK</span>
+        </div>
+        <nav>
+          <ul>
+            <li><a href="#about" class="nav-link">About</a></li>
+            <li><a href="#projects" class="nav-link">Projects</a></li>
+            <li><a href="#major-project" class="nav-link">NueroVista</a></li>
+            <li><a href="#leave-management" class="nav-link">Leave Management</a></li>
+            <li><a href="#contact" class="nav-link">Contact</a></li>
+          </ul>
+        </nav>
+      </header>
+      
+      <main>
+        <div class="hero-content">
+          <div class="hero-text">
+            <h1 class="hero-title">
+              <span class="line1">SNIPPY</span>
+              <span class="line2">KID</span>
+            </h1>
+            <p class="hero-subtitle">Creative Developer & Designer</p>
+            <div class="author">Abhay Hanchate</div>
+          </div>
+          
+          <div class="cta-container">
+            <a href="#about" class="cta-button">Explore More</a>
+          </div>
+        </div>
+        
+        <div class="animated-shapes">
+          <div class="shape shape1"></div>
+          <div class="shape shape2"></div>
+          <div class="shape shape3"></div>
+        </div>
+      </main>
+      
+      <footer>
+        <div class="social-links">
+          <a href="#" class="social-link">Github</a>
+          <a href="#" class="social-link">LinkedIn</a>
+          <a href="#" class="social-link">Dribbble</a>
+        </div>
+        <div class="scroll-indicator">
+          <span>EXPLORE</span>
+          <div class="scroll-arrow">
+            <svg width="18" height="24" viewBox="0 0 18 24" fill="none">
+              <path d="M9 2L9 22M9 22L2 15M9 22L16 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <section class="about-section" id="about">
+      <div class="container">
+        <h2 class="section-title">About Me</h2>
+        
+        <div class="about-content">
+          <div class="about-text">
+            <div class="about-card education">
+              <h3>Education</h3>
+              <div class="card-content">
+                <div class="edu-item">
+                  <h4>Diploma in Artificial Intelligence & Machine Learning</h4>
+                  <p>Dr. Bapuji Salunkhe Institute OF Engineering and Technology</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="about-card experience">
+              <h3>Experience</h3>
+              <div class="card-content">
+                <div class="exp-item">
+                  <h4>Internship</h4>
+                  <p>Walstar Technologies Pvt Ltd</p>
+                </div>
+                <div class="exp-item">
+                  <h4>Awards</h4>
+                  <p>Won several awards for innovative projects</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="skills-container">
+            <div class="about-card skills">
+              <h3>Specializations</h3>
+              <div class="card-content">
+                <div class="skills-grid web">
+                  <h4>Web Development</h4>
+                  <ul class="skill-list">
+                    <li>HTML</li>
+                    <li>CSS</li>
+                    <li>JavaScript</li>
+                    <li>3D Websites</li>
+                    <li>Animations</li>
+                    <li>UI Libraries</li>
+                  </ul>
+                </div>
+                
+                <div class="skills-grid data">
+                  <h4>Data & Development</h4>
+                  <ul class="skill-list">
+                    <li>Python</li>
+                    <li>MongoDB</li>
+                    <li>MySQL</li>
+                    <li>Data Science</li>
+                    <li>Android Studio</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="projects-section" id="projects" style="background-color: #151515; padding: 6rem 0; position: relative; overflow: hidden;">
+      <!-- Gradient background effect -->
+      <div class="projects-bg-gradient"></div>
+      
+      <div class="container" style="position: relative; z-index: 2;">
+        <h2 class="section-title" style="font-size: 3rem; margin-bottom: 1rem; color: white; display: inline-block; position: relative; left: 50%; transform: translateX(-50%);">Featured Projects</h2>
+        <p style="text-align: center; color: rgba(255,255,255,0.7); max-width: 700px; margin: 0 auto 3rem; font-size: 1.1rem;">Showcasing my best work in creative development and design. Click on any project to explore in detail.</p>
+        
+        <div class="project-container">
+          
+          <div class="project-item animate-fade-up-1">
+            <a href="https://snippykid.github.io/HAUTE/" target="_blank" onmouseover="this.querySelector('video').play(); this.style.transform='translateY(-10px)'; this.querySelector('.project-overlay').style.opacity='1';" onmouseout="this.style.transform='translateY(0)'; this.querySelector('.project-overlay').style.opacity='0';">
+              <div class="project-card">
+                <video class="project-video" muted loop>
+                  <source src="./assets/img/project1.mp4" type="video/mp4">
+                </video>
+                <div class="project-overlay">
+                  <div class="project-view-btn">View Project</div>
+                </div>
+                <div class="project-info">
+                  <h3>Haute</h3>
+                  <p>Fashion Website</p>
+                </div>
+              </div>
+            </a>
+          </div>
+          
+          <div class="project-item animate-fade-up-2">
+            <a href="https://snippykid.github.io/WisteriaPerfume/" target="_blank" onmouseover="this.querySelector('video').play(); this.style.transform='translateY(-10px)'; this.querySelector('.project-overlay').style.opacity='1';" onmouseout="this.style.transform='translateY(0)'; this.querySelector('.project-overlay').style.opacity='0';">
+              <div class="project-card">
+                <video class="project-video" muted loop>
+                  <source src="./assets/img/project2.mp4" type="video/mp4">
+                </video>
+                <div class="project-overlay">
+                  <div class="project-view-btn">View Project</div>
+                </div>
+                <div class="project-info">
+                  <h3>Wisteria</h3>
+                  <p>Luxury Perfumes</p>
+                </div>
+              </div>
+            </a>
+          </div>
+          
+          <div class="project-item animate-fade-up-3">
+            <a href="https://snippykid.github.io/Travify/" target="_blank" onmouseover="this.querySelector('video').play(); this.style.transform='translateY(-10px)'; this.querySelector('.project-overlay').style.opacity='1';" onmouseout="this.style.transform='translateY(0)'; this.querySelector('.project-overlay').style.opacity='0';">
+              <div class="project-card">
+                <video class="project-video" muted loop>
+                  <source src="./assets/img/project3.mp4" type="video/mp4">
+                </video>
+                <div class="project-overlay">
+                  <div class="project-view-btn">View Project</div>
+                </div>
+                <div class="project-info">
+                  <h3>Travify</h3>
+                  <p>Travel Website</p>
+                </div>
+              </div>
+            </a>
+          </div>
+          
+          <div class="project-item animate-fade-up-4">
+            <a href="https://snippykid.github.io/ApexComp/" target="_blank" onmouseover="this.querySelector('video').play(); this.style.transform='translateY(-10px)'; this.querySelector('.project-overlay').style.opacity='1';" onmouseout="this.style.transform='translateY(0)'; this.querySelector('.project-overlay').style.opacity='0';">
+              <div class="project-card">
+                <video class="project-video" muted loop>
+                  <source src="./assets/img/project4.mp4" type="video/mp4">
+                </video>
+                <div class="project-overlay">
+                  <div class="project-view-btn">View Project</div>
+                </div>
+                <div class="project-info">
+                  <h3>Apex Computers</h3>
+                  <p>E-Commerce Website</p>
+                </div>
+              </div>
+            </a>
+          </div>
+          
+          <div class="project-item animate-fade-up-5">
+            <a href="https://snippykid.github.io/Nike1996/" target="_blank" onmouseover="this.querySelector('video').play(); this.style.transform='translateY(-10px)'; this.querySelector('.project-overlay').style.opacity='1';" onmouseout="this.style.transform='translateY(0)'; this.querySelector('.project-overlay').style.opacity='0';">
+              <div class="project-card">
+                <video class="project-video" muted loop>
+                  <source src="./assets/img/project5.mp4" type="video/mp4">
+                </video>
+                <div class="project-overlay">
+                  <div class="project-view-btn">View Project</div>
+                </div>
+                <div class="project-info">
+                  <h3>Nike</h3>
+                  <p>1996 Legends Redesigned</p>
+                </div>
+              </div>
+            </a>
+          </div>
+          
+        </div>
+      </div>
+    </section>
+    
+    <!-- Major Project Section - NueroVista -->
+    <section class="major-project-section" id="major-project">
+      <div class="major-project-bg"></div>
+      
+      <div class="container">
+        <div class="major-project-container">
+          <div class="major-project-content">
+            <h2 class="major-project-title">Nuero<span>Vista</span></h2>
+            <p class="major-project-description">
+              NueroVista is a comprehensive mental health and wellness platform designed to provide accessible, user-friendly mental health support for teenagers and young adults. The platform combines traditional assessment tools with interactive features for an engaging experience.
+            </p>
+            
+            <div class="major-project-details">
+              <div class="detail-item">TailwindCSS</div>
+              <div class="detail-item">GSAP Animations</div>
+              <div class="detail-item">PHP/MySQL</div>
+              <div class="detail-item">Web Audio API</div>
+            </div>
+            
+            <p class="major-project-description">
+              Key features include interactive mental health assessments, therapeutic tools like Virtual Piano Therapy, gaming for stress relief, progress tracking with visual analytics, and a comprehensive resource center. The platform prioritizes accessibility, engagement, and privacy.
+            </p>
+          </div>
+          
+          <div class="major-project-video-container">
+            <video class="major-project-video" autoplay muted loop playsinline>
+              <source src="./assets/img/mega-project1.mp4" type="video/mp4">
+            </video>
+            <div class="video-overlay"></div>
+            <div class="video-frame"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Major Project Section - Leave Management System -->
+    <section class="major-project-section" id="leave-management">
+      <div class="major-project-bg"></div>
+      
+      <div class="container">
+        <div class="major-project-container">
+          <div class="major-project-video-container">
+            <video class="major-project-video" autoplay muted loop playsinline>
+              <source src="./assets/img/mega-project2.mp4" type="video/mp4">
+            </video>
+            <div class="video-overlay"></div>
+            <div class="video-frame"></div>
+          </div>
+          
+          <div class="major-project-content">
+            <h2 class="major-project-title">Leave <span>Management</span></h2>
+            <p class="major-project-description">
+              A comprehensive Leave Management System designed to streamline the process of requesting, approving, and tracking employee leave in organizations of all sizes. The platform offers an intuitive interface for both employees and administrators.
+            </p>
+            
+            <div class="major-project-details">
+              <div class="detail-item">React</div>
+              <div class="detail-item">Node.js</div>
+              <div class="detail-item">MongoDB</div>
+              <div class="detail-item">JWT Authentication</div>
+            </div>
+            
+            <p class="major-project-description">
+              Features include customizable leave types, automated approval workflows, calendar integration, leave balance tracking, reporting tools, and notifications. The system improves HR efficiency, reduces paperwork, and provides real-time visibility into team availability.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="site-footer" id="contact">
+      <div class="footer-bg-gradient"></div>
+      
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-logo">
+            <h2 class="footer-title">Snippy<span>Kid</span></h2>
+            <p class="footer-tagline">Abhay Hanchate | Creative Developer & Designer</p>
+          </div>
+          
+          <div class="footer-links">
+            <div class="social-icons">
+              <a href="https://github.com/SnippyKid" target="_blank" class="social-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                </svg>
+                <span>GitHub</span>
+              </a>
+              
+              <a href="https://www.instagram.com/snippykid.labs/" target="_blank" class="social-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                </svg>
+                <span>Instagram</span>
+              </a>
+              
+              <a href="mailto:abhay.snippykid.work@gmail.com" class="social-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+                <span>Email</span>
+              </a>
+            </div>
+          </div>
+        </div>
+        
+        <div class="footer-bottom">
+          <p class="copyright">© 2024 SnippyKid. All rights reserved.</p>
+          <div class="footer-nav">
+            <a href="#" class="footer-nav-link">Home</a>
+            <a href="#about" class="footer-nav-link">About</a>
+            <a href="#projects" class="footer-nav-link">Projects</a>
+            <a href="#contact" class="footer-nav-link">Contact</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./assets/bootstrap-js/bootstrap.min.js"></script>
+    <script src="./assets/gsap.min.js"></script>
+    <script src="./assets/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
+    <script src="./assets/js/script.js"></script>
+  </body>
+</html>
