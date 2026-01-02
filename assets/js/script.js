@@ -17,15 +17,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }).catch(() => {});
   };
   // #endregion
+  
   // Register ScrollTrigger plugin
   gsap.registerPlugin(ScrollTrigger);
+  
+  // Smooth scroll with CSS
+  document.documentElement.style.scrollBehavior = 'smooth';
   
   // Smooth page load animation
   gsap.from('body', {
     opacity: 0,
-    duration: 0.5,
+    duration: 0.8,
     ease: 'power2.out'
   });
+  
+  // Add smooth class to html for better scrolling
+  document.documentElement.classList.add('smooth-scroll');
   
   // Mobile Menu Toggle
   const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
@@ -75,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
     lastScroll = currentScroll;
   });
   
-  // Smooth scrolling
+  // Smooth scrolling with GSAP
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
       e.preventDefault();
@@ -86,10 +93,10 @@ document.addEventListener('DOMContentLoaded', function() {
       const targetElement = document.querySelector(targetId);
       if (targetElement) {
         gsap.to(window, {
-          duration: 1,
+          duration: 1.2,
           scrollTo: {
             y: targetElement,
-            offsetY: 50
+            offsetY: 80
           },
           ease: "power3.inOut"
         });
@@ -662,173 +669,494 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Konami code feature removed
   
-  // ZOMBIE EXPERIENCE - Press SPACE (Toggle)
-  let zombieMode = false;
+  // VOLCANO, SPACE, JUNGLE EXPERIENCES
+  let volcanoMode = false;
   let spaceMode = false;
   let jungleMode = false;
   
+  // Debug logging
+  console.log('🎮 Mode system initialized');
+  
   // Function to disable all modes
   function disableAllModes() {
-    // Disable zombie mode
-    if (zombieMode) {
-      zombieMode = false;
-      document.body.style.filter = 'none';
-      const zombieIndicator = document.getElementById('zombie-indicator');
-      if (zombieIndicator) zombieIndicator.remove();
-      const allElements = document.querySelectorAll('.bento-item, .project-item, .tech-item, .cta-button');
-      allElements.forEach(el => {
-        gsap.to(el, { rotation: 0, scale: 1, opacity: 1, duration: 0.5, ease: 'power2.out' });
-      });
+    // Reset subtitle text to original
+    const heroSubtitle = document.querySelector('.hero-subtitle');
+    if (heroSubtitle && heroSubtitle.dataset.originalText) {
+      heroSubtitle.textContent = heroSubtitle.dataset.originalText;
+    }
+    
+    // Disable volcano mode
+    if (volcanoMode) {
+      volcanoMode = false;
+      deactivateVolcanoInteractions();
+      document.body.classList.remove('volcano-theme');
+      const videoOverlay = document.getElementById('volcano-video-overlay');
+      if (videoOverlay) videoOverlay.remove();
+      const indicator = document.getElementById('volcano-indicator');
+      if (indicator) indicator.remove();
     }
     
     // Disable space mode
     if (spaceMode) {
       spaceMode = false;
-      document.body.style.background = '';
-      const spaceIndicator = document.getElementById('space-indicator');
-      if (spaceIndicator) spaceIndicator.remove();
+      deactivateSpaceInteractions();
+      document.body.classList.remove('space-theme');
+      const videoOverlay = document.getElementById('space-video-overlay');
+      if (videoOverlay) videoOverlay.remove();
+      const indicator = document.getElementById('space-indicator');
+      if (indicator) indicator.remove();
       const starsContainer = document.getElementById('space-stars-container');
       if (starsContainer) starsContainer.remove();
-      gsap.killTweensOf('.bento-item, .project-item, .tech-item, .cta-button, .hero-title, .section-title');
-      const allElements = document.querySelectorAll('.bento-item, .project-item, .tech-item, .cta-button, .hero-title, .section-title');
-      allElements.forEach(el => {
-        gsap.to(el, { x: 0, y: 0, rotation: 0, duration: 0.5, ease: 'power2.out' });
-      });
     }
     
     // Disable jungle mode
     if (jungleMode) {
       jungleMode = false;
-      document.body.style.filter = 'none';
-      const jungleIndicator = document.getElementById('jungle-indicator');
-      if (jungleIndicator) jungleIndicator.remove();
-      const snakeContainer = document.getElementById('jungle-snake-container');
-      if (snakeContainer) snakeContainer.remove();
+      deactivateJungleInteractions();
+      document.body.classList.remove('jungle-theme');
+      const videoOverlay = document.getElementById('jungle-video-overlay');
+      if (videoOverlay) videoOverlay.remove();
+      const indicator = document.getElementById('jungle-indicator');
+      if (indicator) indicator.remove();
     }
   }
   
+  // VOLCANO MODE INTERACTIONS
+  let volcanoScrollListener = null;
+  let volcanoHoverListener = null;
+  
+  function activateVolcanoInteractions() {
+    // Screen shake on scroll
+    volcanoScrollListener = () => {
+      document.body.classList.add('scrolling');
+      setTimeout(() => {
+        document.body.classList.remove('scrolling');
+      }, 300);
+    };
+    
+    let scrollTimeout;
+    window.addEventListener('scroll', () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(volcanoScrollListener, 50);
+    }, { passive: true });
+    
+    // Heat-based cursor effect
+    volcanoHoverListener = (e) => {
+      const heatRipple = document.createElement('div');
+      heatRipple.style.cssText = `
+        position: fixed;
+        left: ${e.clientX}px;
+        top: ${e.clientY}px;
+        width: 40px;
+        height: 40px;
+        background: radial-gradient(circle, rgba(255, 69, 0, 0.4), transparent);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 9998;
+        transform: translate(-50%, -50%);
+      `;
+      document.body.appendChild(heatRipple);
+      
+      gsap.to(heatRipple, {
+        scale: 3,
+        opacity: 0,
+        duration: 0.8,
+        ease: 'power2.out',
+        onComplete: () => heatRipple.remove()
+      });
+    };
+    
+    document.addEventListener('click', volcanoHoverListener);
+  }
+  
+  function deactivateVolcanoInteractions() {
+    if (volcanoHoverListener) {
+      document.removeEventListener('click', volcanoHoverListener);
+      volcanoHoverListener = null;
+    }
+  }
+  
+  // VOLCANO EXPERIENCE - Press SPACE (Toggle)
   document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && !e.repeat && !e.ctrlKey && !e.metaKey) {
+    // Check if not in input field
+    const isInInput = e.target.tagName === 'INPUT' || 
+                      e.target.tagName === 'TEXTAREA' || 
+                      e.target.isContentEditable;
+    
+    if (e.code === 'Space' && !e.repeat && !e.ctrlKey && !e.metaKey && !isInInput) {
       // Prevent default scroll behavior
       e.preventDefault();
+      e.stopPropagation();
+      
+      console.log('🌋 SPACE pressed, current volcanoMode:', volcanoMode);
       
       // Disable other modes first
       if (spaceMode || jungleMode) {
         disableAllModes();
       }
       
-      zombieMode = !zombieMode;
-      sendLog('H1', 'Zombie toggle', { zombieMode }, 'script.js:ZOMBIE');
+      volcanoMode = !volcanoMode;
+      console.log('🌋 Volcano mode toggled to:', volcanoMode);
+      sendLog('H1', 'Volcano toggle', { volcanoMode }, 'script.js:VOLCANO');
       
-      if (zombieMode) {
-        // Activate zombie mode
-        document.body.style.filter = 'saturate(0.3) hue-rotate(90deg) contrast(1.2)';
-        document.body.style.transition = 'filter 1s ease';
-        sendLog('H1', 'Zombie activated', { filter: document.body.style.filter }, 'script.js:ZOMBIE');
+      if (volcanoMode) {
+        // Activate volcano mode with video
+        sendLog('H1', 'Volcano activated', {}, 'script.js:VOLCANO');
         
-        const zombieText = document.createElement('div');
-        zombieText.textContent = '🧟 ZOMBIE APOCALYPSE 🧟';
-        zombieText.style.cssText = `
+        // Activate volcano interactions
+        activateVolcanoInteractions();
+        
+        // Smooth transition overlay
+        const transitionOverlay = document.createElement('div');
+        transitionOverlay.style.cssText = `
           position: fixed;
-          top: 20px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: rgba(0, 100, 0, 0.9);
-          color: #00ff00;
-          padding: 1rem 2rem;
-          border-radius: 10px;
-          font-size: 1.5rem;
-          font-weight: bold;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: radial-gradient(circle at center, rgba(255, 69, 0, 0.3), rgba(139, 0, 0, 0.5));
+          z-index: 9999;
+          pointer-events: none;
+          opacity: 0;
+        `;
+        document.body.appendChild(transitionOverlay);
+        
+        gsap.to(transitionOverlay, {
+          opacity: 1,
+          duration: 0.4,
+          ease: 'power2.in',
+          onComplete: () => {
+            // Add volcano theme class to body
+            document.body.classList.add('volcano-theme');
+            
+            // Change subtitle text
+            const heroSubtitle = document.querySelector('.hero-subtitle');
+            if (heroSubtitle) {
+              if (!heroSubtitle.dataset.originalText) {
+                heroSubtitle.dataset.originalText = heroSubtitle.textContent;
+              }
+              heroSubtitle.textContent = 'Eruption Engineer of Pixels & Code | Freelancer';
+            }
+            
+            gsap.to(transitionOverlay, {
+              opacity: 0,
+              duration: 0.6,
+              ease: 'power2.out',
+              delay: 0.2,
+              onComplete: () => transitionOverlay.remove()
+            });
+          }
+        });
+        
+        // Create video overlay
+        const videoOverlay = document.createElement('div');
+        videoOverlay.id = 'volcano-video-overlay';
+        videoOverlay.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: 0;
+          pointer-events: none;
+          opacity: 0;
+          transition: opacity 3s cubic-bezier(0.4, 0, 0.2, 1);
+        `;
+        
+        const video = document.createElement('video');
+        video.src = './assets/videos/STUNNING Drone Video of ICELAND VOLCANO Eruption 4K DJI FPV - Joey Helms (1080p, h264).mp4';
+        video.currentTime = 5; // Start at 5 seconds
+        video.autoplay = true;
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.style.cssText = `
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          filter: brightness(0.7) contrast(1.4) saturate(1.8) hue-rotate(-10deg);
+        `;
+        
+        videoOverlay.appendChild(video);
+        document.body.appendChild(videoOverlay);
+        
+        // Create heat distortion effect
+        const heatOverlay = document.createElement('div');
+        heatOverlay.className = 'heat-distortion';
+        heatOverlay.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: 1;
+          pointer-events: none;
+          background: radial-gradient(circle at 50% 100%, rgba(255, 69, 0, 0.3), transparent 60%);
+          animation: heat-wave 3s ease-in-out infinite;
+        `;
+        videoOverlay.appendChild(heatOverlay);
+        
+        // Fade in smoothly
+        setTimeout(() => {
+          videoOverlay.style.opacity = '1';
+        }, 500);
+        
+        // Create compact indicator
+        const indicator = document.createElement('div');
+        indicator.id = 'volcano-indicator';
+        indicator.innerHTML = `
+          <div class="mode-badge volcano-badge">
+            <div class="mode-icon">🔥</div>
+            <div class="mode-text">VOLCANO</div>
+          </div>
+        `;
+        indicator.style.cssText = `
+          position: fixed;
+          bottom: 30px;
+          right: 30px;
           z-index: 10000;
           pointer-events: none;
-          text-shadow: 0 0 10px #00ff00;
-          max-width: 90vw;
-          text-align: center;
+          opacity: 0;
+          transform: translateY(20px);
+          transition: all 0.4s ease;
         `;
-        document.body.appendChild(zombieText);
-        zombieText.id = 'zombie-indicator';
+        document.body.appendChild(indicator);
         
         setTimeout(() => {
-          zombieText.textContent += ' (Press SPACE to exit)';
-        }, 1000);
+          indicator.style.opacity = '1';
+          indicator.style.transform = 'translateY(0)';
+        }, 100);
         
-        // Make elements look decayed
-        const allElements = document.querySelectorAll('.bento-item, .project-item, .tech-item, .cta-button');
-        allElements.forEach(el => {
-          gsap.to(el, {
-            rotation: Math.random() * 10 - 5,
-            scale: 0.95,
-            opacity: 0.7,
-            duration: 1,
-            ease: 'power2.out'
-          });
-        });
+        // Show keyboard shortcut
+        showKeyboardShortcut('SPACE', '🌋 VOLCANO MODE');
       } else {
-        // Deactivate zombie mode
-        document.body.style.filter = 'none';
-        sendLog('H1', 'Zombie deactivated', { filter: document.body.style.filter }, 'script.js:ZOMBIE');
+        // Deactivate volcano mode
+        sendLog('H1', 'Volcano deactivated', {}, 'script.js:VOLCANO');
         
-        const indicator = document.getElementById('zombie-indicator');
-        if (indicator) indicator.remove();
+        // Smooth transition overlay
+        const transitionOverlay = document.createElement('div');
+        transitionOverlay.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: radial-gradient(circle at center, rgba(10, 10, 15, 0.8), rgba(0, 0, 0, 0.9));
+          z-index: 9999;
+          pointer-events: none;
+          opacity: 0;
+        `;
+        document.body.appendChild(transitionOverlay);
         
-        // Restore elements
-        const allElements = document.querySelectorAll('.bento-item, .project-item, .tech-item, .cta-button');
-        allElements.forEach(el => {
-          gsap.to(el, {
-            rotation: 0,
-            scale: 1,
-            opacity: 1,
-            duration: 1,
-            ease: 'elastic.out(1, 0.5)'
-          });
+        gsap.to(transitionOverlay, {
+          opacity: 1,
+          duration: 0.4,
+          ease: 'power2.in',
+          onComplete: () => {
+            // Deactivate volcano interactions
+            deactivateVolcanoInteractions();
+            
+            // Remove volcano theme class
+            document.body.classList.remove('volcano-theme');
+            
+            const videoOverlay = document.getElementById('volcano-video-overlay');
+            if (videoOverlay) videoOverlay.remove();
+            
+            gsap.to(transitionOverlay, {
+              opacity: 0,
+              duration: 0.6,
+              ease: 'power2.out',
+              delay: 0.2,
+              onComplete: () => transitionOverlay.remove()
+            });
+          }
         });
+        
+        const indicator = document.getElementById('volcano-indicator');
+        if (indicator) {
+          indicator.style.opacity = '0';
+          indicator.style.transform = 'translateY(20px)';
+          setTimeout(() => indicator.remove(), 400);
+        }
       }
     }
   });
   
+  // SPACE MODE INTERACTIONS
+  let spaceHoverListener = null;
+  let spaceScrollModifier = null;
+  let spaceFloatInterval = null;
+  
+  function activateSpaceInteractions() {
+    // Subtle zero-gravity float effect on cards only
+    const floatElements = document.querySelectorAll('.bento-item, .project-card');
+    floatElements.forEach((el, index) => {
+      gsap.to(el, {
+        y: '+=8',
+        duration: 4 + Math.random() * 2,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+        delay: index * 0.3
+      });
+    });
+    
+    // Subtle parallax on mouse move
+    spaceHoverListener = (e) => {
+      const moveX = (e.clientX - window.innerWidth / 2) * 0.005;
+      const moveY = (e.clientY - window.innerHeight / 2) * 0.005;
+      
+      document.querySelectorAll('.bento-item, .project-card').forEach((el, index) => {
+        const depth = (index % 3 + 1) * 0.3;
+        gsap.to(el, {
+          x: moveX * depth,
+          y: moveY * depth,
+          duration: 1.2,
+          ease: 'power1.out'
+        });
+      });
+    };
+    
+    document.addEventListener('mousemove', spaceHoverListener);
+  }
+  
+  function deactivateSpaceInteractions() {
+    if (spaceHoverListener) {
+      document.removeEventListener('mousemove', spaceHoverListener);
+      spaceHoverListener = null;
+    }
+    if (spaceFloatInterval) {
+      clearInterval(spaceFloatInterval);
+      spaceFloatInterval = null;
+    }
+    
+    // Kill all floating animations
+    gsap.killTweensOf('.bento-item, .project-card, .hero-title, .section-title, .tech-item');
+    
+    // Reset all element positions
+    const elements = document.querySelectorAll('.bento-item, .project-card, .tech-item, .hero-title, .section-title');
+    elements.forEach(el => {
+      gsap.to(el, { x: 0, y: 0, duration: 0.5 });
+    });
+  }
+  
   // SPACE EXPERIENCE - Press 'E'
-  let originalBodyBg = '';
   document.addEventListener('keydown', (e) => {
-    if (e.key.toLowerCase() === 'e' && !spaceMode && !e.repeat && !e.ctrlKey && !e.metaKey) {
+    const isInInput = e.target.tagName === 'INPUT' || 
+                      e.target.tagName === 'TEXTAREA' || 
+                      e.target.isContentEditable;
+    
+    if (e.key.toLowerCase() === 'e' && !spaceMode && !e.repeat && !e.ctrlKey && !e.metaKey && !isInInput) {
+      console.log('🚀 E pressed, current spaceMode:', spaceMode);
+      
       // Disable other modes first
-      if (zombieMode || jungleMode) {
+      if (volcanoMode || jungleMode) {
         disableAllModes();
       }
       
       spaceMode = true;
+      console.log('🚀 Space mode activated:', spaceMode);
+      sendLog('H2', 'Space activated', {}, 'script.js:SPACE');
       
-      // Save original background
-      originalBodyBg = document.body.style.background || '';
-      sendLog('H2', 'Space activate save background', { originalBodyBg }, 'script.js:SPACE');
+      // Activate space interactions
+      activateSpaceInteractions();
       
-      // Space environment
-      document.body.style.background = 'radial-gradient(circle, #000033, #000000)';
-      document.body.style.transition = 'background 2s ease';
-      
-      const spaceText = document.createElement('div');
-      spaceText.textContent = '🚀 SPACE MODE 🌌';
-      spaceText.style.cssText = `
+      // Smooth transition overlay
+      const transitionOverlay = document.createElement('div');
+      transitionOverlay.style.cssText = `
         position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0, 0, 50, 0.9);
-        color: #00ffff;
-        padding: 1rem 2rem;
-        border-radius: 10px;
-        font-size: 1.5rem;
-        font-weight: bold;
-        z-index: 10000;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at center, rgba(0, 255, 255, 0.2), rgba(0, 0, 50, 0.5));
+        z-index: 9999;
         pointer-events: none;
-        text-shadow: 0 0 20px #00ffff;
-        border: 2px solid #00ffff;
-        max-width: 90vw;
-        text-align: center;
+        opacity: 0;
       `;
-      document.body.appendChild(spaceText);
-      spaceText.id = 'space-indicator';
+      document.body.appendChild(transitionOverlay);
       
-      // Create stars container
+      gsap.to(transitionOverlay, {
+        opacity: 1,
+        duration: 0.4,
+        ease: 'power2.in',
+        onComplete: () => {
+          // Add space theme class to body
+          document.body.classList.add('space-theme');
+          
+          // Change subtitle text
+          const heroSubtitle = document.querySelector('.hero-subtitle');
+          if (heroSubtitle) {
+            if (!heroSubtitle.dataset.originalText) {
+              heroSubtitle.dataset.originalText = heroSubtitle.textContent;
+            }
+            heroSubtitle.textContent = 'Stellar Alchemist of Experiences | Freelancer';
+          }
+          
+          gsap.to(transitionOverlay, {
+            opacity: 0,
+            duration: 0.6,
+            ease: 'power2.out',
+            delay: 0.2,
+            onComplete: () => transitionOverlay.remove()
+          });
+        }
+      });
+      
+      // Create video overlay
+      const videoOverlay = document.createElement('div');
+      videoOverlay.id = 'space-video-overlay';
+      videoOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 3s cubic-bezier(0.4, 0, 0.2, 1);
+      `;
+      
+      const video = document.createElement('video');
+      video.src = './assets/videos/Serenity - A Space Cinematic Film - SpaceCinema (1080p, h264) (1).mp4';
+      video.currentTime = 5; // Start at 5 seconds
+      video.autoplay = true;
+      video.loop = true;
+      video.muted = true;
+      video.playsInline = true;
+      video.style.cssText = `
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: brightness(0.6) contrast(1.3) saturate(1.2);
+      `;
+      
+      videoOverlay.appendChild(video);
+      document.body.appendChild(videoOverlay);
+      
+      // Create nebula overlay
+      const nebula = document.createElement('div');
+      nebula.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        pointer-events: none;
+        background: radial-gradient(circle at 30% 40%, rgba(138, 43, 226, 0.2), transparent 50%),
+                    radial-gradient(circle at 70% 60%, rgba(0, 191, 255, 0.15), transparent 50%);
+        animation: nebula-drift 20s ease-in-out infinite;
+      `;
+      videoOverlay.appendChild(nebula);
+      
+      // Fade in smoothly
+      setTimeout(() => {
+        videoOverlay.style.opacity = '1';
+      }, 500);
+      
+      // Create stars container for extra effect
       const starsContainer = document.createElement('div');
       starsContainer.id = 'space-stars-container';
       starsContainer.style.cssText = `
@@ -838,256 +1166,365 @@ document.addEventListener('DOMContentLoaded', function() {
         width: 100%;
         height: 100vh;
         pointer-events: none;
-        z-index: 1;
+        z-index: 2;
         overflow: hidden;
       `;
       document.body.appendChild(starsContainer);
       
-      // Create stars
-      for (let i = 0; i < 100; i++) {
+      // Create shooting stars and twinkling stars
+      for (let i = 0; i < 80; i++) {
         const star = document.createElement('div');
         star.className = 'space-star';
+        const size = Math.random() * 3;
         star.style.cssText = `
           position: absolute;
-          width: ${Math.random() * 3}px;
-          height: ${Math.random() * 3}px;
+          width: ${size}px;
+          height: ${size}px;
           background: white;
           border-radius: 50%;
           left: ${Math.random() * 100}%;
           top: ${Math.random() * 100}%;
           pointer-events: none;
-          box-shadow: 0 0 ${Math.random() * 10}px white;
+          box-shadow: 0 0 ${8 + Math.random() * 15}px rgba(255, 255, 255, 0.9);
         `;
         starsContainer.appendChild(star);
         
         gsap.to(star, {
-          opacity: Math.random(),
-          duration: Math.random() * 2 + 1,
+          opacity: 0.2 + Math.random() * 0.8,
+          scale: 0.5 + Math.random() * 1.5,
+          duration: 0.8 + Math.random() * 2,
           repeat: -1,
-          yoyo: true
+          yoyo: true,
+          ease: 'sine.inOut'
         });
       }
       
-      // Make everything float like in space
-      const allElements = document.querySelectorAll('.bento-item, .project-item, .tech-item, .cta-button, .hero-title, .section-title');
-      allElements.forEach((el, index) => {
-        gsap.to(el, {
-          y: `+=${Math.random() * 100 - 50}`,
-          x: `+=${Math.random() * 50 - 25}`,
-          rotation: Math.random() * 360,
-          duration: 3 + Math.random() * 2,
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-          delay: index * 0.1
-        });
-      });
+      // Create compact indicator
+      const indicator = document.createElement('div');
+      indicator.id = 'space-indicator';
+      indicator.innerHTML = `
+        <div class="mode-badge space-badge">
+          <div class="mode-icon">🌌</div>
+          <div class="mode-text">SPACE</div>
+        </div>
+      `;
+      indicator.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 10000;
+        pointer-events: none;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.4s ease;
+      `;
+      document.body.appendChild(indicator);
       
       setTimeout(() => {
-        spaceText.textContent += ' (Press E to exit)';
-      }, 1000);
-    } else if (e.key.toLowerCase() === 'e' && spaceMode && !e.repeat) {
+        indicator.style.opacity = '1';
+        indicator.style.transform = 'translateY(0)';
+      }, 100);
+    } else if (e.key.toLowerCase() === 'e' && spaceMode && !e.repeat && !isInInput) {
       spaceMode = false;
+      sendLog('H2', 'Space deactivated', {}, 'script.js:SPACE');
       
-      // Restore original background
-      document.body.style.background = originalBodyBg;
-      sendLog('H2', 'Space deactivate restore background', { originalBodyBg, currentBg: document.body.style.background }, 'script.js:SPACE');
+      // Smooth transition overlay
+      const transitionOverlay = document.createElement('div');
+      transitionOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at center, rgba(10, 10, 15, 0.8), rgba(0, 0, 0, 0.9));
+        z-index: 9999;
+        pointer-events: none;
+        opacity: 0;
+      `;
+      document.body.appendChild(transitionOverlay);
+      
+      gsap.to(transitionOverlay, {
+        opacity: 1,
+        duration: 0.4,
+        ease: 'power2.in',
+        onComplete: () => {
+          // Deactivate space interactions
+          deactivateSpaceInteractions();
+          
+          // Remove space theme class
+          document.body.classList.remove('space-theme');
+          
+          const videoOverlay = document.getElementById('space-video-overlay');
+          if (videoOverlay) videoOverlay.remove();
+          
+          const starsContainer = document.getElementById('space-stars-container');
+          if (starsContainer) starsContainer.remove();
+          
+          gsap.to(transitionOverlay, {
+            opacity: 0,
+            duration: 0.6,
+            ease: 'power2.out',
+            delay: 0.2,
+            onComplete: () => transitionOverlay.remove()
+          });
+        }
+      });
       
       const indicator = document.getElementById('space-indicator');
-      if (indicator) indicator.remove();
-      
-      // Remove stars container
-      const starsContainer = document.getElementById('space-stars-container');
-      if (starsContainer) starsContainer.remove();
-      
-      // Kill all floating animations
-      gsap.killTweensOf('.bento-item, .project-item, .tech-item, .cta-button, .hero-title, .section-title');
-      
-      // Reset positions
-      const allElements = document.querySelectorAll('.bento-item, .project-item, .tech-item, .cta-button, .hero-title, .section-title');
-      allElements.forEach(el => {
-        gsap.to(el, {
-          x: 0,
-          y: 0,
-          rotation: 0,
-          duration: 1,
-          ease: 'power2.out'
-        });
-      });
+      if (indicator) {
+        indicator.style.opacity = '0';
+        indicator.style.transform = 'translateY(20px)';
+        setTimeout(() => indicator.remove(), 400);
+      }
     }
   });
   
+  // JUNGLE MODE INTERACTIONS
+  let jungleHoverListener = null;
+  let jungleSwayInterval = null;
+  let jungleLeafInterval = null;
+  let jungleScrollListener = null;
+  
+  function activateJungleInteractions() {
+    // Subtle breathing effect on cards only
+    const elements = document.querySelectorAll('.bento-item, .project-card');
+    elements.forEach((el, index) => {
+      gsap.to(el, {
+        scale: 1.01,
+        duration: 3 + Math.random(),
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+        delay: index * 0.2
+      });
+    });
+    
+    // Subtle wind-driven parallax
+    jungleHoverListener = (e) => {
+      const moveX = (e.clientX - window.innerWidth / 2) * 0.008;
+      const moveY = (e.clientY - window.innerHeight / 2) * 0.008;
+      
+      document.querySelectorAll('.bento-item, .project-card').forEach((el, index) => {
+        const depth = (index % 3 + 1) * 0.4;
+        gsap.to(el, {
+          x: moveX * depth,
+          y: moveY * depth,
+          duration: 1,
+          ease: 'power1.out'
+        });
+      });
+    };
+    
+    document.addEventListener('mousemove', jungleHoverListener);
+  }
+  
+  function deactivateJungleInteractions() {
+    if (jungleHoverListener) {
+      document.removeEventListener('mousemove', jungleHoverListener);
+      jungleHoverListener = null;
+    }
+    
+    // Stop all breathing animations
+    gsap.killTweensOf('.bento-item, .project-card');
+    
+    // Reset positions
+    document.querySelectorAll('.bento-item, .project-card').forEach(el => {
+      gsap.to(el, { x: 0, y: 0, scale: 1, duration: 0.5 });
+    });
+  }
+  
   // JUNGLE EXPERIENCE - Press 'J'
   document.addEventListener('keydown', (e) => {
-    if (e.key.toLowerCase() === 'j' && !jungleMode && !e.repeat && !e.ctrlKey && !e.metaKey) {
+    const isInInput = e.target.tagName === 'INPUT' || 
+                      e.target.tagName === 'TEXTAREA' || 
+                      e.target.isContentEditable;
+    
+    if (e.key.toLowerCase() === 'j' && !jungleMode && !e.repeat && !e.ctrlKey && !e.metaKey && !isInInput) {
+      console.log('🌿 J pressed, current jungleMode:', jungleMode);
+      
       // Disable other modes first
-      if (zombieMode || spaceMode) {
+      if (volcanoMode || spaceMode) {
         disableAllModes();
       }
       
       jungleMode = true;
+      console.log('🌿 Jungle mode activated:', jungleMode);
+      sendLog('H3', 'Jungle activated', {}, 'script.js:JUNGLE');
       
-      // Jungle environment
-      document.body.style.filter = 'hue-rotate(90deg) saturate(1.5) brightness(0.8)';
-      document.body.style.transition = 'filter 1s ease';
-      sendLog('H3', 'Jungle activated', { filter: document.body.style.filter }, 'script.js:JUNGLE');
+      // Activate jungle interactions
+      activateJungleInteractions();
       
-      const jungleText = document.createElement('div');
-      jungleText.textContent = '🐍 JUNGLE MODE 🌿';
-      jungleText.style.cssText = `
+      // Smooth transition overlay
+      const transitionOverlay = document.createElement('div');
+      transitionOverlay.style.cssText = `
         position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0, 100, 0, 0.9);
-        color: #ffff00;
-        padding: 1rem 2rem;
-        border-radius: 10px;
-        font-size: 1.5rem;
-        font-weight: bold;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at center, rgba(0, 255, 0, 0.2), rgba(0, 50, 0, 0.5));
+        z-index: 9999;
+        pointer-events: none;
+        opacity: 0;
+      `;
+      document.body.appendChild(transitionOverlay);
+      
+      gsap.to(transitionOverlay, {
+        opacity: 1,
+        duration: 0.4,
+        ease: 'power2.in',
+        onComplete: () => {
+          // Add jungle theme class to body
+          document.body.classList.add('jungle-theme');
+          
+          // Change subtitle text
+          const heroSubtitle = document.querySelector('.hero-subtitle');
+          if (heroSubtitle) {
+            if (!heroSubtitle.dataset.originalText) {
+              heroSubtitle.dataset.originalText = heroSubtitle.textContent;
+            }
+            heroSubtitle.textContent = 'Wild-Crafted Creator of Digital Ecosystems | Freelancer';
+          }
+          
+          gsap.to(transitionOverlay, {
+            opacity: 0,
+            duration: 0.6,
+            ease: 'power2.out',
+            delay: 0.2,
+            onComplete: () => transitionOverlay.remove()
+          });
+        }
+      });
+      
+      // Create video overlay
+      const videoOverlay = document.createElement('div');
+      videoOverlay.id = 'jungle-video-overlay';
+      videoOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 3s cubic-bezier(0.4, 0, 0.2, 1);
+      `;
+      
+      const video = document.createElement('video');
+      video.src = './assets/videos/The Forest Cinematic Drone Footage - Julien Hulin (1080p, h264).mp4';
+      video.currentTime = 5; // Start at 5 seconds
+      video.autoplay = true;
+      video.loop = true;
+      video.muted = true;
+      video.playsInline = true;
+      video.style.cssText = `
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: brightness(0.6) contrast(1.3) saturate(1.6) hue-rotate(5deg);
+      `;
+      
+      videoOverlay.appendChild(video);
+      document.body.appendChild(videoOverlay);
+      
+      // Create jungle mist effect
+      const mist = document.createElement('div');
+      mist.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        pointer-events: none;
+        background: linear-gradient(to bottom, transparent, rgba(0, 50, 0, 0.2) 50%, transparent);
+        animation: jungle-mist 8s ease-in-out infinite;
+      `;
+      videoOverlay.appendChild(mist);
+      
+      // Fade in smoothly
+      setTimeout(() => {
+        videoOverlay.style.opacity = '1';
+      }, 500);
+      
+      // Create compact indicator
+      const indicator = document.createElement('div');
+      indicator.id = 'jungle-indicator';
+      indicator.innerHTML = `
+        <div class="mode-badge jungle-badge">
+          <div class="mode-icon">🦁</div>
+          <div class="mode-text">JUNGLE</div>
+        </div>
+      `;
+      indicator.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
         z-index: 10000;
         pointer-events: none;
-        text-shadow: 0 0 10px #ffff00;
-        border: 2px solid #00ff00;
-        max-width: 90vw;
-        text-align: center;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.4s ease;
       `;
-      document.body.appendChild(jungleText);
-      jungleText.id = 'jungle-indicator';
-      
-      // Spawn MULTIPLE snakes frequently
-      const spawnSnake = () => {
-        if (!jungleMode) return;
-        
-        // Spawn 2-3 snakes at once
-        const snakeCount = 2 + Math.floor(Math.random() * 2);
-        sendLog('H3', 'Snakes spawn batch', { snakeCount }, 'script.js:JUNGLE');
-        
-        for (let i = 0; i < snakeCount; i++) {
-          const elements = document.querySelectorAll('.bento-item, .project-item, .tech-item, .hero-title, .section-title, .cta-button');
-          const randomEl = elements[Math.floor(Math.random() * elements.length)];
-          
-          if (randomEl) {
-            const rect = randomEl.getBoundingClientRect();
-            
-            // Random snake type
-            const snakeTypes = ['🐍', '🐉', '🦎', '🐊'];
-            const snakeEmoji = snakeTypes[Math.floor(Math.random() * snakeTypes.length)];
-            
-            // Create snake container if it doesn't exist
-            let snakeContainer = document.getElementById('jungle-snake-container');
-            if (!snakeContainer) {
-              snakeContainer = document.createElement('div');
-              snakeContainer.id = 'jungle-snake-container';
-              snakeContainer.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                pointer-events: none;
-                z-index: 10001;
-                overflow: hidden;
-              `;
-              document.body.appendChild(snakeContainer);
-            }
-            
-            const snake = document.createElement('div');
-            snake.textContent = snakeEmoji;
-            snake.className = 'jungle-snake';
-            snake.style.cssText = `
-              position: absolute;
-              left: ${rect.left + rect.width / 2}px;
-              top: ${rect.top + rect.height / 2}px;
-              font-size: ${4 + Math.random() * 2}rem;
-              pointer-events: none;
-              filter: drop-shadow(0 0 20px #00ff00) drop-shadow(0 0 40px #00ff00);
-            `;
-            snakeContainer.appendChild(snake);
-            
-            // Snake appears with explosion effect
-            gsap.fromTo(snake, 
-              { scale: 0, rotation: -180 },
-              {
-                scale: 1,
-                rotation: 0,
-                duration: 0.3,
-                ease: 'back.out(3)'
-              }
-            );
-            
-            // Snake slithers across screen
-            const angle = Math.random() * Math.PI * 2;
-            const distance = 400 + Math.random() * 300;
-            
-            gsap.to(snake, {
-              x: Math.cos(angle) * distance,
-              y: Math.sin(angle) * distance,
-              rotation: angle * (180 / Math.PI) + Math.random() * 180,
-              duration: 1.5 + Math.random(),
-              ease: 'power1.inOut',
-              onUpdate: function() {
-                // Wiggle effect
-                snake.style.transform += ` rotate(${Math.sin(this.progress() * 20) * 10}deg)`;
-              },
-              onComplete: () => {
-                gsap.to(snake, {
-                  scale: 0,
-                  opacity: 0,
-                  duration: 0.3,
-                  onComplete: () => snake.remove()
-                });
-              }
-            });
-            
-            // VIOLENT shake the element
-            gsap.to(randomEl, {
-              x: Math.random() * 30 - 15,
-              y: Math.random() * 30 - 15,
-              rotation: Math.random() * 20 - 10,
-              duration: 0.05,
-              repeat: 15,
-              yoyo: true,
-              ease: 'power1.inOut',
-              onComplete: () => {
-                gsap.to(randomEl, { 
-                  x: 0, 
-                  y: 0, 
-                  rotation: 0,
-                  duration: 0.5,
-                  ease: 'elastic.out(1, 0.3)'
-                });
-              }
-            });
-          }
-        }
-        
-        if (jungleMode) {
-          // Spawn more frequently
-          setTimeout(spawnSnake, 800 + Math.random() * 1200);
-        }
-      };
-      
-      // Start spawning immediately
-      spawnSnake();
-      setTimeout(spawnSnake, 400);
-      setTimeout(spawnSnake, 800);
+      document.body.appendChild(indicator);
       
       setTimeout(() => {
-        jungleText.textContent += ' (Press J to exit)';
-      }, 1000);
-    } else if (e.key.toLowerCase() === 'j' && jungleMode && !e.repeat) {
-      jungleMode = false;
+        indicator.style.opacity = '1';
+        indicator.style.transform = 'translateY(0)';
+      }, 100);
       
-      document.body.style.filter = 'none';
-      sendLog('H3', 'Jungle deactivated', { filter: document.body.style.filter }, 'script.js:JUNGLE');
+      // Show keyboard shortcut
+      showKeyboardShortcut('J', '🌿 JUNGLE MODE');
+    } else if (e.key.toLowerCase() === 'j' && jungleMode && !e.repeat && !isInInput) {
+      jungleMode = false;
+      sendLog('H3', 'Jungle deactivated', {}, 'script.js:JUNGLE');
+      
+      // Smooth transition overlay
+      const transitionOverlay = document.createElement('div');
+      transitionOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at center, rgba(10, 10, 15, 0.8), rgba(0, 0, 0, 0.9));
+        z-index: 9999;
+        pointer-events: none;
+        opacity: 0;
+      `;
+      document.body.appendChild(transitionOverlay);
+      
+      gsap.to(transitionOverlay, {
+        opacity: 1,
+        duration: 0.4,
+        ease: 'power2.in',
+        onComplete: () => {
+          // Deactivate jungle interactions
+          deactivateJungleInteractions();
+          
+          // Remove jungle theme class
+          document.body.classList.remove('jungle-theme');
+          
+          const videoOverlay = document.getElementById('jungle-video-overlay');
+          if (videoOverlay) videoOverlay.remove();
+          
+          gsap.to(transitionOverlay, {
+            opacity: 0,
+            duration: 0.6,
+            ease: 'power2.out',
+            delay: 0.2,
+            onComplete: () => transitionOverlay.remove()
+          });
+        }
+      });
       
       const indicator = document.getElementById('jungle-indicator');
-      if (indicator) indicator.remove();
-      
-      // Remove snake container
-      const snakeContainer = document.getElementById('jungle-snake-container');
-      if (snakeContainer) snakeContainer.remove();
+      if (indicator) {
+        indicator.style.opacity = '0';
+        indicator.style.transform = 'translateY(20px)';
+        setTimeout(() => indicator.remove(), 400);
+      }
     }
   });
   
@@ -1118,4 +1555,175 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
   }, 10000);
+  
+  // FUNCTIONALITY IMPROVEMENTS
+  
+  // 1. Prevent default space scroll behavior globally
+  window.addEventListener('keydown', (e) => {
+    // Prevent space scroll only if not in an input field
+    if (e.code === 'Space' && 
+        e.target.tagName !== 'INPUT' && 
+        e.target.tagName !== 'TEXTAREA' && 
+        !e.target.isContentEditable) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+  
+  // 2. Smooth scroll performance optimization
+  let scrollTimeout;
+  window.addEventListener('scroll', () => {
+    clearTimeout(scrollTimeout);
+    document.body.classList.add('is-scrolling');
+    
+    scrollTimeout = setTimeout(() => {
+      document.body.classList.remove('is-scrolling');
+    }, 150);
+  }, { passive: true });
+  
+  // 3. Pause videos when not in viewport (performance)
+  const videoObserverOptions = {
+    threshold: 0.1,
+    rootMargin: '50px'
+  };
+  
+  const videoObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const video = entry.target;
+      if (entry.isIntersecting) {
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    });
+  }, videoObserverOptions);
+  
+  document.querySelectorAll('.project-video').forEach(video => {
+    videoObserver.observe(video);
+  });
+  
+  // 4. Preload mode videos for instant playback
+  const preloadVideos = [
+    './assets/videos/STUNNING Drone Video of ICELAND VOLCANO Eruption 4K DJI FPV - Joey Helms (1080p, h264).mp4',
+    './assets/videos/Serenity - A Space Cinematic Film - SpaceCinema (1080p, h264) (1).mp4',
+    './assets/videos/The Forest Cinematic Drone Footage - Julien Hulin (1080p, h264).mp4'
+  ];
+  
+  preloadVideos.forEach(src => {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'video';
+    link.href = src;
+    document.head.appendChild(link);
+  });
+  
+  // 5. Keyboard shortcuts indicator
+  let shortcutTimeout;
+  function showKeyboardShortcut(key, modeName) {
+    const existing = document.getElementById('keyboard-indicator');
+    if (existing) existing.remove();
+    
+    const indicator = document.createElement('div');
+    indicator.id = 'keyboard-indicator';
+    indicator.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(20px);
+      padding: 2rem 3rem;
+      border-radius: 20px;
+      border: 2px solid var(--accent-color);
+      z-index: 10001;
+      pointer-events: none;
+      opacity: 0;
+      font-size: 3rem;
+      font-weight: 700;
+      color: white;
+      text-align: center;
+    `;
+    indicator.innerHTML = `
+      <div style="font-size: 1.5rem; opacity: 0.7; margin-bottom: 0.5rem;">${key}</div>
+      <div>${modeName}</div>
+    `;
+    document.body.appendChild(indicator);
+    
+    gsap.to(indicator, {
+      opacity: 1,
+      scale: 1.1,
+      duration: 0.3,
+      ease: 'back.out(2)',
+      onComplete: () => {
+        gsap.to(indicator, {
+          opacity: 0,
+          scale: 0.9,
+          duration: 0.3,
+          delay: 0.5,
+          ease: 'power2.in',
+          onComplete: () => indicator.remove()
+        });
+      }
+    });
+  }
+  
+  // 6. Escape key to exit any mode
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (volcanoMode || spaceMode || jungleMode) {
+        disableAllModes();
+        showKeyboardShortcut('ESC', 'Default Mode');
+      }
+    }
+  });
+  
+  // 7. Better mobile menu close on scroll
+  let lastScrollTop = 0;
+  window.addEventListener('scroll', () => {
+    const st = window.pageYOffset || document.documentElement.scrollTop;
+    if (st > lastScrollTop && st > 100) {
+      const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+      const mainNav = document.querySelector('.main-nav');
+      if (mainNav && mainNav.classList.contains('active')) {
+        mobileMenuToggle.classList.remove('active');
+        mainNav.classList.remove('active');
+        document.body.classList.remove('menu-open');
+      }
+    }
+    lastScrollTop = st <= 0 ? 0 : st;
+  }, { passive: true });
+  
+  // 8. Smooth reveal animations for sections
+  const revealElements = document.querySelectorAll('.bento-item, .project-card, .tech-item');
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry, index) => {
+      if (entry.isIntersecting) {
+        gsap.to(entry.target, {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          delay: index * 0.08,
+          ease: 'power3.out'
+        });
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+  
+  revealElements.forEach(el => {
+    gsap.set(el, { opacity: 0, y: 40 });
+    revealObserver.observe(el);
+  });
+  
+  // 9. Performance: Reduce animations on low-end devices
+  if (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4) {
+    document.body.classList.add('reduced-motion');
+  }
+  
+  // 10. Better error handling for videos
+  document.querySelectorAll('video').forEach(video => {
+    video.addEventListener('error', (e) => {
+      console.warn('Video failed to load:', video.src);
+      video.style.display = 'none';
+    });
+  });
 });
