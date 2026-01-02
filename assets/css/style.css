@@ -1249,9 +1249,9 @@ header {
   left: 0;
   width: 100%;
   z-index: 1000;
-  background: rgba(10, 10, 15, 0.95);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+  background: transparent;
+  backdrop-filter: blur(3px);
+  border-bottom: 1px solid rgba(168, 85, 247, 0.1);
   transition: var(--transition);
 }
 
