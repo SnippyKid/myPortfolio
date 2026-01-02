@@ -89,6 +89,17 @@ body.volcano-theme p {
 
 body.volcano-theme .line2 {
   color: #ff4500 !important;
+  filter: drop-shadow(0 0 30px rgba(255, 69, 0, 0.8)) !important;
+  animation: text-glow-volcano 3s ease-in-out infinite !important;
+}
+
+@keyframes text-glow-volcano {
+  0%, 100% { 
+    filter: drop-shadow(0 0 30px rgba(255, 69, 0, 0.8));
+  }
+  50% { 
+    filter: drop-shadow(0 0 50px rgba(255, 69, 0, 1)) drop-shadow(0 0 80px rgba(255, 140, 0, 0.6));
+  }
 }
 
 body.volcano-theme .cta-button,
@@ -292,6 +303,17 @@ body.space-theme p {
 
 body.space-theme .line2 {
   color: #00bfff !important;
+  filter: drop-shadow(0 0 30px rgba(0, 255, 255, 0.8)) !important;
+  animation: text-glow-space 3s ease-in-out infinite !important;
+}
+
+@keyframes text-glow-space {
+  0%, 100% { 
+    filter: drop-shadow(0 0 30px rgba(0, 255, 255, 0.8));
+  }
+  50% { 
+    filter: drop-shadow(0 0 50px rgba(0, 255, 255, 1)) drop-shadow(0 0 80px rgba(0, 191, 255, 0.6));
+  }
 }
 
 body.space-theme .cta-button,
@@ -491,6 +513,17 @@ body.jungle-theme p {
 
 body.jungle-theme .line2 {
   color: #00ff00 !important;
+  filter: drop-shadow(0 0 30px rgba(0, 255, 0, 0.8)) !important;
+  animation: text-glow-jungle 3s ease-in-out infinite !important;
+}
+
+@keyframes text-glow-jungle {
+  0%, 100% { 
+    filter: drop-shadow(0 0 30px rgba(0, 255, 0, 0.8));
+  }
+  50% { 
+    filter: drop-shadow(0 0 50px rgba(0, 255, 0, 1)) drop-shadow(0 0 80px rgba(127, 255, 0, 0.6));
+  }
 }
 
 body.jungle-theme .cta-button,
