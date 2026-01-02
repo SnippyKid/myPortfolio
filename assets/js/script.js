@@ -615,25 +615,63 @@ document.addEventListener('DOMContentLoaded', function() {
   // Random color shift on sections - DISABLED to prevent white screen issues
   // Sections now maintain their dark backgrounds consistently
   
-  // UNEXPECTED: Text scramble effect on hover
+  // UNEXPECTED: Text scramble effect on hover with occasional creative messages
+  const creativeMessages = [
+    "DON'T WASTE TIME ON ME",
+    "LOOK BELOW INSTEAD",
+    "SCROLL DOWN ALREADY",
+    "NOTHING TO SEE HERE",
+    "THE GOOD STUFF IS BELOW",
+    "STOP HOVERING, START SCROLLING",
+    "YOU'RE MISSING THE CONTENT",
+    "PROJECTS WON'T VIEW THEMSELVES"
+  ];
+  
   const scrambleText = (element) => {
-    const originalText = element.textContent;
+    // Store original text if not already stored
+    if (!element.dataset.originalText) {
+      element.dataset.originalText = element.textContent;
+    }
+    const originalText = element.dataset.originalText;
+    
+    // 15% chance to show creative message instead
+    const showCreativeMessage = Math.random() < 0.15;
+    const targetText = showCreativeMessage 
+      ? creativeMessages[Math.floor(Math.random() * creativeMessages.length)]
+      : originalText;
+    
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
     let iteration = 0;
     
-    const interval = setInterval(() => {
-      element.textContent = originalText
+    // Clear any existing interval on this element
+    if (element.scrambleInterval) {
+      clearInterval(element.scrambleInterval);
+    }
+    
+    element.scrambleInterval = setInterval(() => {
+      element.textContent = targetText
         .split('')
         .map((char, index) => {
+          if (char === ' ') return ' '; // Keep spaces
           if (index < iteration) {
-            return originalText[index];
+            return targetText[index];
           }
           return chars[Math.floor(Math.random() * chars.length)];
         })
         .join('');
       
-      if (iteration >= originalText.length) {
-        clearInterval(interval);
+      if (iteration >= targetText.length) {
+        clearInterval(element.scrambleInterval);
+        element.scrambleInterval = null;
+        
+        // If it was a creative message, revert back to original after 2 seconds
+        if (showCreativeMessage) {
+          setTimeout(() => {
+            if (element.dataset.originalText) {
+              element.textContent = element.dataset.originalText;
+            }
+          }, 2000);
+        }
       }
       
       iteration += 1 / 3;
@@ -642,7 +680,10 @@ document.addEventListener('DOMContentLoaded', function() {
   
   document.querySelectorAll('.section-title').forEach(title => {
     title.addEventListener('mouseenter', () => {
-      scrambleText(title);
+      // Prevent multiple simultaneous scrambles
+      if (!title.scrambleInterval) {
+        scrambleText(title);
+      }
     });
   });
   
