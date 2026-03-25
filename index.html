@@ -4,9 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SnippyKid | Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="./assets/css/style.css" />
-    <link rel="stylesheet" href="./assets/bootstrap-css/bootstrap.min.css" />
   </head>
   <body>
     <div class="floating-hint">💡 Press SPACE🌋, Press E🚀, Press J🌿</div>
@@ -43,32 +45,28 @@
               <span class="line2">KID</span>
             </h1>
             <p class="hero-subtitle">Creative Developer & Designer | Freelancer</p>
-            <div class="author">Abhay Hanchate</div>
-          </div>
-          
-          <div class="cta-container">
-            <a href="#about" class="cta-button">Explore More</a>
+            <div class="author-block">
+              <span class="author-line"></span>
+              <span class="author">Abhay Hanchate</span>
+            </div>
           </div>
           
           <!-- Experiences Section -->
           <div class="experiences-mini">
-            <h3 class="experiences-title">🎮 Try These Experiences</h3>
-            <div class="experience-cards">
-              <div class="exp-card">
-                <div class="exp-icon">🌋</div>
-                <div class="exp-name">Volcano</div>
-                <div class="exp-key">Press SPACE</div>
-              </div>
-              <div class="exp-card">
-                <div class="exp-icon">🚀</div>
-                <div class="exp-name">Space</div>
-                <div class="exp-key">Press E</div>
-              </div>
-              <div class="exp-card">
-                <div class="exp-icon">🌿</div>
-                <div class="exp-name">Jungle</div>
-                <div class="exp-key">Press J</div>
-              </div>
+            <span class="experiences-eyebrow">Themes</span>
+            <div class="experience-hotkeys">
+              <button class="hotkey-btn" data-mode="volcano" title="Volcano Mode">
+                <span class="hotkey-badge">SPACE</span>
+                <span class="hotkey-label">🌋 Volcano</span>
+              </button>
+              <button class="hotkey-btn" data-mode="space" title="Space Mode">
+                <span class="hotkey-badge">E</span>
+                <span class="hotkey-label">🚀 Space</span>
+              </button>
+              <button class="hotkey-btn" data-mode="jungle" title="Jungle Mode">
+                <span class="hotkey-badge">J</span>
+                <span class="hotkey-label">🌿 Jungle</span>
+              </button>
             </div>
           </div>
         </div>
@@ -112,118 +110,160 @@
           </p>
         </div>
         
-        <div class="about-bento">
-          <div class="bento-item bento-large">
-            <div class="bento-icon"><i class="fas fa-code"></i></div>
-            <h3>What I Do</h3>
-            <p>I specialize in full-stack development, 3D web experiences with Three.js, and mind-bending GSAP animations. From e-commerce platforms to interactive portfolios, I create digital products that don't just work—they mesmerize.</p>
-            <div class="bento-glow"></div>
+        <!-- Stats row -->
+        <div class="about-stats-row">
+          <div class="about-stat">
+            <span class="about-stat-num craft-num" data-target="10">0</span>
+            <span class="about-stat-label">Projects delivered</span>
           </div>
-          
-          <div class="bento-item">
-            <div class="bento-icon"><i class="fas fa-briefcase"></i></div>
-            <h3>Experience</h3>
-            <p>Internship at Walstar Technologies</p>
-            <span class="bento-sub">Multiple Award-Winning Projects</span>
+          <div class="about-stats-divider"></div>
+          <div class="about-stat">
+            <span class="about-stat-num craft-num" data-target="4">0</span>
+            <span class="about-stat-label">Happy clients</span>
+          </div>
+          <div class="about-stats-divider"></div>
+          <div class="about-stat">
+            <span class="about-stat-num craft-num" data-target="2">0</span>
+            <span class="about-stat-label">Years building</span>
+          </div>
+          <div class="about-stats-divider"></div>
+          <div class="about-stat about-stat-text">
+            <span class="about-stat-org">Walstar Technologies</span>
+            <span class="about-stat-label">Internship &amp; freelance</span>
+          </div>
+        </div>
+
+        <!-- Skills ticker -->
+        <div class="about-skills-ticker-wrap">
+          <div class="about-skills-ticker">
+            <span>Three.js</span><span class="ticker-dot">·</span>
+            <span>GSAP</span><span class="ticker-dot">·</span>
+            <span>React</span><span class="ticker-dot">·</span>
+            <span>Node.js</span><span class="ticker-dot">·</span>
+            <span>MongoDB</span><span class="ticker-dot">·</span>
+            <span>Full-Stack Dev</span><span class="ticker-dot">·</span>
+            <span>3D Web</span><span class="ticker-dot">·</span>
+            <span>UI / UX</span><span class="ticker-dot">·</span>
+            <span>Animation</span><span class="ticker-dot">·</span>
+            <span>E-Commerce</span><span class="ticker-dot">·</span>
+            <!-- duplicate for loop -->
+            <span>Three.js</span><span class="ticker-dot">·</span>
+            <span>GSAP</span><span class="ticker-dot">·</span>
+            <span>React</span><span class="ticker-dot">·</span>
+            <span>Node.js</span><span class="ticker-dot">·</span>
+            <span>MongoDB</span><span class="ticker-dot">·</span>
+            <span>Full-Stack Dev</span><span class="ticker-dot">·</span>
+            <span>3D Web</span><span class="ticker-dot">·</span>
+            <span>UI / UX</span><span class="ticker-dot">·</span>
+            <span>Animation</span><span class="ticker-dot">·</span>
+            <span>E-Commerce</span><span class="ticker-dot">·</span>
           </div>
         </div>
       </div>
     </section>
-    <section class="projects-section" id="projects" style="background-color: #151515; padding: 6rem 0; position: relative; overflow: hidden;">
-      <!-- Gradient background effect -->
+    <section class="projects-section" id="projects">
       <div class="projects-bg-gradient"></div>
-      
-      <div class="container" style="position: relative; z-index: 2;">
-        <h2 class="section-title" style="font-size: 3rem; margin-bottom: 1rem; color: white; display: inline-block; position: relative; left: 50%; transform: translateX(-50%);">Featured Projects</h2>
-        <p style="text-align: center; color: rgba(255,255,255,0.7); max-width: 700px; margin: 0 auto 3rem; font-size: 1.1rem;">Showcasing my best work in creative development and design. Click on any project to explore in detail.</p>
-        
-        <div class="project-container">
-          
-          <div class="project-item animate-fade-up-1">
-            <a href="https://snippykid.github.io/KORD/" target="_blank" onmouseover="this.querySelector('video').play(); this.style.transform='translateY(-10px)'; this.querySelector('.project-overlay').style.opacity='1';" onmouseout="this.style.transform='translateY(0)'; this.querySelector('.project-overlay').style.opacity='0';">
-              <div class="project-card">
-                <video class="project-video" muted loop>
-                  <source src="./assets/img/project6.mp4" type="video/mp4">
-                </video>
-                <div class="project-overlay">
-                  <div class="project-view-btn">View Project</div>
-                </div>
-                <div class="project-info">
-                  <h3>KORD</h3>
-                  <p>Sock Brand</p>
-                </div>
+      <div class="container">
+        <h2 class="section-title">Featured Projects</h2>
+        <p class="projects-subtitle">Hover to preview. Click to explore.</p>
+
+        <div class="projects-list">
+
+          <a class="proj-row" href="https://snippykid.github.io/KORD/" target="_blank">
+            <div class="proj-row-left">
+              <span class="proj-num">01</span>
+              <div class="proj-row-info">
+                <h3 class="proj-row-title">KORD</h3>
+                <p class="proj-row-sub">Sock Brand</p>
               </div>
-            </a>
-          </div>
-          
-          <div class="project-item animate-fade-up-2">
-            <a href="https://snippykid.github.io/WisteriaPerfume/" target="_blank" onmouseover="this.querySelector('video').play(); this.style.transform='translateY(-10px)'; this.querySelector('.project-overlay').style.opacity='1';" onmouseout="this.style.transform='translateY(0)'; this.querySelector('.project-overlay').style.opacity='0';">
-              <div class="project-card">
-                <video class="project-video" muted loop>
-                  <source src="./assets/img/project2.mp4" type="video/mp4">
-                </video>
-                <div class="project-overlay">
-                  <div class="project-view-btn">View Project</div>
-                </div>
-                <div class="project-info">
-                  <h3>Wisteria</h3>
-                  <p>Luxury Perfumes</p>
-                </div>
+            </div>
+            <div class="proj-row-tags">
+              <span>Branding</span><span>3D</span><span>E-Commerce</span>
+            </div>
+            <div class="proj-row-preview" data-title="KORD — Sock Brand">
+              <video muted loop preload="none">
+                <source src="./assets/img/project6.mp4" type="video/mp4">
+              </video>
+            </div>
+            <div class="proj-row-arrow"><i class="fas fa-arrow-right"></i></div>
+          </a>
+
+          <a class="proj-row" href="https://snippykid.github.io/WisteriaPerfume/" target="_blank">
+            <div class="proj-row-left">
+              <span class="proj-num">02</span>
+              <div class="proj-row-info">
+                <h3 class="proj-row-title">Wisteria</h3>
+                <p class="proj-row-sub">Luxury Perfumes</p>
               </div>
-            </a>
-          </div>
-          
-          <div class="project-item animate-fade-up-3">
-            <a href="https://snippykid.github.io/Travify/" target="_blank" onmouseover="this.querySelector('video').play(); this.style.transform='translateY(-10px)'; this.querySelector('.project-overlay').style.opacity='1';" onmouseout="this.style.transform='translateY(0)'; this.querySelector('.project-overlay').style.opacity='0';">
-              <div class="project-card">
-                <video class="project-video" muted loop>
-                  <source src="./assets/img/project3.mp4" type="video/mp4">
-                </video>
-                <div class="project-overlay">
-                  <div class="project-view-btn">View Project</div>
-                </div>
-                <div class="project-info">
-                  <h3>Travify</h3>
-                  <p>Travel Website</p>
-                </div>
+            </div>
+            <div class="proj-row-tags">
+              <span>Luxury</span><span>GSAP</span><span>UI/UX</span>
+            </div>
+            <div class="proj-row-preview" data-title="Wisteria — Luxury Perfumes">
+              <video muted loop preload="none">
+                <source src="./assets/img/project2.mp4" type="video/mp4">
+              </video>
+            </div>
+            <div class="proj-row-arrow"><i class="fas fa-arrow-right"></i></div>
+          </a>
+
+          <a class="proj-row" href="https://snippykid.github.io/Travify/" target="_blank">
+            <div class="proj-row-left">
+              <span class="proj-num">03</span>
+              <div class="proj-row-info">
+                <h3 class="proj-row-title">Travify</h3>
+                <p class="proj-row-sub">Travel Website</p>
               </div>
-            </a>
-          </div>
-          
-          <div class="project-item animate-fade-up-4">
-            <a href="https://snippykid.github.io/ApexComp/" target="_blank" onmouseover="this.querySelector('video').play(); this.style.transform='translateY(-10px)'; this.querySelector('.project-overlay').style.opacity='1';" onmouseout="this.style.transform='translateY(0)'; this.querySelector('.project-overlay').style.opacity='0';">
-              <div class="project-card">
-                <video class="project-video" muted loop>
-                  <source src="./assets/img/project4.mp4" type="video/mp4">
-                </video>
-                <div class="project-overlay">
-                  <div class="project-view-btn">View Project</div>
-                </div>
-                <div class="project-info">
-                  <h3>Apex Computers</h3>
-                  <p>E-Commerce Website</p>
-                </div>
+            </div>
+            <div class="proj-row-tags">
+              <span>Travel</span><span>React</span><span>Animation</span>
+            </div>
+            <div class="proj-row-preview" data-title="Travify — Travel Website">
+              <video muted loop preload="none">
+                <source src="./assets/img/project3.mp4" type="video/mp4">
+              </video>
+            </div>
+            <div class="proj-row-arrow"><i class="fas fa-arrow-right"></i></div>
+          </a>
+
+          <a class="proj-row" href="https://snippykid.github.io/ApexComp/" target="_blank">
+            <div class="proj-row-left">
+              <span class="proj-num">04</span>
+              <div class="proj-row-info">
+                <h3 class="proj-row-title">Apex Computers</h3>
+                <p class="proj-row-sub">E-Commerce</p>
               </div>
-            </a>
-          </div>
-          
-          <div class="project-item animate-fade-up-5">
-            <a href="https://snippykid.github.io/Nike1996/" target="_blank" onmouseover="this.querySelector('video').play(); this.style.transform='translateY(-10px)'; this.querySelector('.project-overlay').style.opacity='1';" onmouseout="this.style.transform='translateY(0)'; this.querySelector('.project-overlay').style.opacity='0';">
-              <div class="project-card">
-                <video class="project-video" muted loop>
-                  <source src="./assets/img/project5.mp4" type="video/mp4">
-                </video>
-                <div class="project-overlay">
-                  <div class="project-view-btn">View Project</div>
-                </div>
-                <div class="project-info">
-                  <h3>Nike</h3>
-                  <p>1996 Legends Redesigned</p>
-                </div>
+            </div>
+            <div class="proj-row-tags">
+              <span>E-Commerce</span><span>Full-Stack</span><span>Node.js</span>
+            </div>
+            <div class="proj-row-preview" data-title="Apex Computers — E-Commerce">
+              <video muted loop preload="none">
+                <source src="./assets/img/project4.mp4" type="video/mp4">
+              </video>
+            </div>
+            <div class="proj-row-arrow"><i class="fas fa-arrow-right"></i></div>
+          </a>
+
+          <a class="proj-row" href="https://snippykid.github.io/Nike1996/" target="_blank">
+            <div class="proj-row-left">
+              <span class="proj-num">05</span>
+              <div class="proj-row-info">
+                <h3 class="proj-row-title">Nike 1996</h3>
+                <p class="proj-row-sub">Legends Redesigned</p>
               </div>
-            </a>
-          </div>
-          
+            </div>
+            <div class="proj-row-tags">
+              <span>Redesign</span><span>Three.js</span><span>Interactive</span>
+            </div>
+            <div class="proj-row-preview" data-title="Nike 1996 — Legends Redesigned">
+              <video muted loop preload="none">
+                <source src="./assets/img/project5.mp4" type="video/mp4">
+              </video>
+            </div>
+            <div class="proj-row-arrow"><i class="fas fa-arrow-right"></i></div>
+          </a>
+
         </div>
       </div>
     </section>
@@ -276,24 +316,64 @@
     <!-- Clients Section -->
     <section class="clients-section">
       <div class="container">
-        <h2 class="section-title">Trusted By</h2>
-        <div class="clients-grid">
-          <div class="client-logo">
-            <div class="logo-placeholder">
-              <img src="./assets/img/vision.png" alt="Vision Systems and Solutions" />
+        <h2 class="section-title">Previous Clients</h2>
+        <p class="clients-subtitle">Brands that trusted the vision</p>
+      </div>
+
+      <div class="clients-accordion">
+
+        <div class="client-row">
+          <div class="client-row-meta">
+            <span class="client-row-num">01</span>
+            <div class="client-row-text">
+              <h3 class="client-row-name">Vision Systems &amp; Solutions</h3>
+              <span class="client-row-domain">IT Solutions</span>
             </div>
           </div>
-          <div class="client-logo">
-            <div class="logo-placeholder">
-              <img src="./assets/img/ACME.jpeg" alt="ACME Infocom Services" />
-            </div>
-          </div>
-          <div class="client-logo">
-            <div class="logo-placeholder">
-              <img src="./assets/img/PRIMETECH SOLUTION LOGO_page-0001.jpg" alt="PrimeTech Solutions" />
-            </div>
+          <div class="client-row-logo">
+            <img src="./assets/img/vision.png" alt="Vision Systems & Solutions" />
           </div>
         </div>
+
+        <div class="client-row">
+          <div class="client-row-meta">
+            <span class="client-row-num">02</span>
+            <div class="client-row-text">
+              <h3 class="client-row-name">ACME Infocom Services</h3>
+              <span class="client-row-domain">Infocom &amp; Networking</span>
+            </div>
+          </div>
+          <div class="client-row-logo">
+            <img src="./assets/img/ACME.jpeg" alt="ACME Infocom Services" />
+          </div>
+        </div>
+
+        <div class="client-row">
+          <div class="client-row-meta">
+            <span class="client-row-num">03</span>
+            <div class="client-row-text">
+              <h3 class="client-row-name">Primetech Solutions</h3>
+              <span class="client-row-domain">Tech Consulting</span>
+            </div>
+          </div>
+          <div class="client-row-logo">
+            <img src="./assets/img/PRIMETECH SOLUTION LOGO_page-0001.jpg" alt="Primetech Solutions" />
+          </div>
+        </div>
+
+        <div class="client-row">
+          <div class="client-row-meta">
+            <span class="client-row-num">04</span>
+            <div class="client-row-text">
+              <h3 class="client-row-name">Holystone Construction</h3>
+              <span class="client-row-domain">Construction &amp; Infrastructure</span>
+            </div>
+          </div>
+          <div class="client-row-logo">
+            <img src="./assets/img/holystone.jfif" alt="Holystone Construction Pvt Ltd" />
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -308,16 +388,15 @@
             <span>Available for Freelance</span>
           </div>
           
-          <h2 class="freelancer-title">Let's Build Something<br><span>Amazing Together</span></h2>
+          <h2 class="freelancer-title">Everybody needs<br><span>a website, don't you?</span></h2>
           
           <p class="freelancer-description">
-            I create stunning web experiences with cutting-edge technologies. 
-            From interactive 3D websites to full-stack applications, I bring your vision to life.
+            Let's make yours the one they can't stop talking about.
           </p>
           
           <div class="cta-buttons">
             <a href="mailto:abhay.snippykid.work@gmail.com" class="cta-button primary">
-              <span>Start a Project</span>
+              <span>Let's Talk</span>
               <i class="fas fa-arrow-right"></i>
             </a>
             <a href="#contact" class="cta-button secondary">
@@ -330,51 +409,47 @@
 
     <!-- Footer Section -->
     <footer class="site-footer" id="contact">
-      <div class="footer-bg-gradient"></div>
-      
-      <div class="container">
-        <div class="footer-content">
-          <div class="footer-logo">
-            <h2 class="footer-title">Snippy<span>Kid</span></h2>
-            <p class="footer-tagline">Abhay Hanchate | Creative Developer & Designer</p>
-          </div>
-          
-          <div class="footer-links">
-            <div class="social-icons">
-              <a href="https://github.com/SnippyKid" target="_blank" class="social-icon">
-                <i class="fab fa-github"></i>
-                <span>GitHub</span>
-              </a>
-              
-              <a href="https://www.linkedin.com/in/abhay-hanchate" target="_blank" class="social-icon">
-                <i class="fab fa-linkedin-in"></i>
-                <span>LinkedIn</span>
-              </a>
-              
-              <a href="mailto:abhay.snippykid.work@gmail.com" class="social-icon">
-                <i class="fas fa-envelope"></i>
-                <span>Email</span>
-              </a>
-            </div>
-          </div>
+      <div class="footer-glow-orb"></div>
+
+      <div class="footer-inner">
+        <p class="footer-eyebrow">Based in India · Open to Remote</p>
+
+        <h2 class="footer-big-name">
+          <span class="footer-name-snippy">SNIPPY</span><span class="footer-name-kid">KID</span>
+        </h2>
+
+        <p class="footer-sub">Creative Developer &amp; Designer · Abhay Hanchate</p>
+
+        <div class="footer-socials">
+          <a href="https://github.com/SnippyKid" target="_blank" class="footer-social-link">
+            <i class="fab fa-github"></i><span>GitHub</span>
+          </a>
+          <a href="https://www.linkedin.com/in/abhay-hanchate" target="_blank" class="footer-social-link">
+            <i class="fab fa-linkedin-in"></i><span>LinkedIn</span>
+          </a>
+          <a href="mailto:abhay.snippykid.work@gmail.com" class="footer-social-link">
+            <i class="fas fa-envelope"></i><span>Email</span>
+          </a>
         </div>
-        
-        <div class="footer-bottom">
-          <p class="copyright">© 2025 SnippyKid. All rights reserved.</p>
-          <div class="footer-nav">
-            <a href="#" class="footer-nav-link">Home</a>
-            <a href="#about" class="footer-nav-link">About</a>
-            <a href="#projects" class="footer-nav-link">Projects</a>
-            <a href="#contact" class="footer-nav-link">Contact</a>
-          </div>
+
+        <div class="footer-divider"></div>
+
+        <div class="footer-bottom-row">
+          <span class="footer-copy">© 2025 SnippyKid</span>
+          <span class="footer-mode-label">Default Mode</span>
+          <nav class="footer-nav">
+            <a href="#">Home</a>
+            <a href="#about">About</a>
+            <a href="#projects">Work</a>
+            <a href="#contact">Contact</a>
+          </nav>
         </div>
       </div>
     </footer>
 
-    <script src="./assets/bootstrap-js/bootstrap.min.js"></script>
-    <script src="./assets/gsap.min.js"></script>
-    <script src="./assets/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
     <script src="./assets/js/script.js"></script>
   </body>
 </html>

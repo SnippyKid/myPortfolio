@@ -1,22 +1,5 @@
 // Initialize animations when document is ready
 document.addEventListener('DOMContentLoaded', function() {
-  // #region agent log helper
-  const sendLog = (hypothesisId, message, data, location) => {
-    fetch('http://127.0.0.1:7242/ingest/ed1d6d4d-57e9-4547-adbd-eed04bbe61ff', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        sessionId: 'debug-session',
-        runId: 'run1',
-        hypothesisId,
-        location,
-        message,
-        data,
-        timestamp: Date.now()
-      })
-    }).catch(() => {});
-  };
-  // #endregion
   
   // Register ScrollTrigger plugin
   gsap.registerPlugin(ScrollTrigger);
@@ -24,12 +7,52 @@ document.addEventListener('DOMContentLoaded', function() {
   // Smooth scroll with CSS
   document.documentElement.style.scrollBehavior = 'smooth';
   
-  // Smooth page load animation
-  gsap.from('body', {
-    opacity: 0,
+  // Smooth page load animation (animate a wrapper, never the body directly to preserve scrolling)
+  document.body.style.opacity = '0';
+  gsap.to('body', {
+    opacity: 1,
     duration: 0.8,
-    ease: 'power2.out'
+    ease: 'power2.out',
+    onComplete: () => {
+      document.body.style.removeProperty('opacity');
+    }
   });
+
+  // ---- HERO NAME SCRAMBLE ----
+  (function() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    const line1El = document.querySelector('.hero-title .line1');
+    const line2El = document.querySelector('.hero-title .line2');
+    if (!line1El || !line2El) return;
+
+    function scramble(el, finalText, duration, startDelay) {
+      const len = finalText.length;
+      let frame = 0;
+      const totalFrames = Math.round(duration * 60);
+      const resolveAt = (i) => Math.floor((i / len) * totalFrames * 0.7);
+
+      setTimeout(() => {
+        const tick = () => {
+          let display = '';
+          for (let i = 0; i < len; i++) {
+            if (frame >= resolveAt(i)) {
+              display += finalText[i];
+            } else {
+              display += chars[Math.floor(Math.random() * chars.length)];
+            }
+          }
+          el.textContent = display;
+          frame++;
+          if (frame <= totalFrames) requestAnimationFrame(tick);
+          else el.textContent = finalText;
+        };
+        requestAnimationFrame(tick);
+      }, startDelay);
+    }
+
+    scramble(line1El, 'SNIPPY', 1.8, 200);
+    scramble(line2El, 'KID',    1.4, 500);
+  })();
   
   // Add smooth class to html for better scrolling
   document.documentElement.classList.add('smooth-scroll');
@@ -258,15 +281,140 @@ document.addEventListener('DOMContentLoaded', function() {
     ease: 'none'
   });
   
-  // Project card video play on hover
-  document.querySelectorAll('.project-item').forEach(item => {
-    item.addEventListener('mouseenter', () => {
-      const video = item.querySelector('video');
-      if (video) {
-        video.play();
-      }
+  // ---- PROJECT ROWS: floating video preview that follows cursor ----
+  let activePreview = null;
+  const PW = 460, PH = 280;
+
+  // Inject LIVE badge into every preview element once
+  document.querySelectorAll('.proj-row-preview').forEach(preview => {
+    if (!preview.querySelector('.proj-preview-live')) {
+      const badge = document.createElement('div');
+      badge.className = 'proj-preview-live';
+      badge.innerHTML = '<span class="proj-preview-live-dot"></span> LIVE';
+      preview.appendChild(badge);
+    }
+  });
+
+  // Smooth mouse position with lerp
+  let mouseRawX = 0, mouseRawY = 0;
+  let previewLerpX = 0, previewLerpY = 0;
+  let previewRAF = null;
+
+  function lerpPreview() {
+    if (!activePreview) { previewRAF = null; return; }
+    previewLerpX += (mouseRawX - previewLerpX) * 0.1;
+    previewLerpY += (mouseRawY - previewLerpY) * 0.1;
+    activePreview.style.left = previewLerpX + 'px';
+    activePreview.style.top  = previewLerpY + 'px';
+    previewRAF = requestAnimationFrame(lerpPreview);
+  }
+
+  document.addEventListener('mousemove', (e) => {
+    let x = e.clientX + 32;
+    let y = e.clientY - PH / 2;
+    if (x + PW > window.innerWidth - 16)  x = e.clientX - PW - 32;
+    if (y < 16)                            y = 16;
+    if (y + PH > window.innerHeight - 16) y = window.innerHeight - PH - 16;
+    mouseRawX = x;
+    mouseRawY = y;
+
+    // 3D tilt relative to cursor position within the preview card
+    if (activePreview) {
+      const rect = activePreview.getBoundingClientRect();
+      const cx = rect.left + rect.width  / 2;
+      const cy = rect.top  + rect.height / 2;
+      const dx = (e.clientX - cx) / (rect.width  / 2);
+      const dy = (e.clientY - cy) / (rect.height / 2);
+      // Keep translate from lerpPreview, just add tilt on top
+      activePreview.style.transform = `scale(1) rotate(0deg) translateY(0) perspective(800px) rotateY(${dx * 7}deg) rotateX(${-dy * 5}deg)`;
+    }
+  }, { passive: true });
+
+  document.querySelectorAll('.proj-row').forEach(row => {
+    const preview = row.querySelector('.proj-row-preview');
+    const video   = preview ? preview.querySelector('video') : null;
+
+    row.addEventListener('mouseenter', (e) => {
+      if (!preview) return;
+      let x = e.clientX + 32;
+      let y = e.clientY - PH / 2;
+      if (x + PW > window.innerWidth - 16)  x = e.clientX - PW - 32;
+      if (y < 16)                            y = 16;
+      if (y + PH > window.innerHeight - 16) y = window.innerHeight - PH - 16;
+      previewLerpX = x; previewLerpY = y;
+      mouseRawX = x;    mouseRawY = y;
+      preview.style.left = x + 'px';
+      preview.style.top  = y + 'px';
+      requestAnimationFrame(() => preview.classList.add('is-visible'));
+      activePreview = preview;
+      if (!previewRAF) previewRAF = requestAnimationFrame(lerpPreview);
+      if (video) video.play().catch(() => {});
+    });
+
+    row.addEventListener('mouseleave', () => {
+      if (!preview) return;
+      preview.classList.remove('is-visible');
+      preview.style.transform = '';
+      activePreview = null;
+      if (video) { video.pause(); video.currentTime = 0; }
     });
   });
+
+  // ---- COUNTING NUMBERS in about bento ----
+  const countObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.querySelectorAll('.craft-num').forEach(el => {
+        const target = parseInt(el.dataset.target, 10);
+        let current = 0;
+        const step = Math.max(1, Math.ceil(target / 40));
+        const timer = setInterval(() => {
+          current = Math.min(current + step, target);
+          el.textContent = current;
+          if (current >= target) clearInterval(timer);
+        }, 40);
+      });
+      countObserver.unobserve(entry.target);
+    });
+  }, { threshold: 0.4 });
+
+  const bentoCountEl = document.querySelector('.about-stats-row');
+  if (bentoCountEl) countObserver.observe(bentoCountEl);
+
+  // ---- FOOTER MODE LABEL ----
+  function updateFooterMode() {
+    const label = document.querySelector('.footer-mode-label');
+    if (!label) return;
+    if (document.body.classList.contains('volcano-theme')) label.textContent = '🌋 Volcano Mode';
+    else if (document.body.classList.contains('space-theme')) label.textContent = '🚀 Space Mode';
+    else if (document.body.classList.contains('jungle-theme')) label.textContent = '🌿 Jungle Mode';
+    else label.textContent = 'Default Mode';
+  }
+
+  // ---- HOTKEY BUTTONS — click to trigger modes ----
+  function syncHotkeyActive() {
+    document.querySelectorAll('.hotkey-btn').forEach(btn => {
+      const mode = btn.dataset.mode;
+      const isOn = (mode === 'volcano' && document.body.classList.contains('volcano-theme')) ||
+                   (mode === 'space'   && document.body.classList.contains('space-theme'))   ||
+                   (mode === 'jungle'  && document.body.classList.contains('jungle-theme'));
+      btn.classList.toggle('is-active', isOn);
+    });
+  }
+
+  document.querySelectorAll('.hotkey-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const mode = btn.dataset.mode;
+      if (mode === 'volcano') document.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
+      if (mode === 'space')   document.dispatchEvent(new KeyboardEvent('keydown', { key: 'e', code: 'KeyE',  bubbles: true }));
+      if (mode === 'jungle')  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'j', code: 'KeyJ',  bubbles: true }));
+      setTimeout(syncHotkeyActive, 100);
+    });
+  });
+
+  // sync active state and footer mode label whenever body class changes
+  const bodyObserver = new MutationObserver(() => { syncHotkeyActive(); updateFooterMode(); });
+  bodyObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
   
   // Smooth scroll reveal animations
   const observerOptions = {
@@ -283,8 +431,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }, observerOptions);
   
-  // Observe elements for animation
-  document.querySelectorAll('.bento-item, .project-item, .freelance-card').forEach(el => {
+  // Observe elements for animation (only freelance-card, bento/project handled by GSAP reveal below)
+  document.querySelectorAll('.freelance-card').forEach(el => {
     el.style.opacity = '0';
     el.style.transform = 'translateY(30px)';
     el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
@@ -390,25 +538,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
   
-  // Subtle mouse parallax for hero title
-  window.addEventListener('mousemove', (e) => {
-    const moveX = (e.clientX - window.innerWidth / 2) * 0.005;
-    const moveY = (e.clientY - window.innerHeight / 2) * 0.005;
-    
-    gsap.to('.line1', {
-      x: moveX,
-      y: moveY,
-      duration: 1,
-      ease: 'power2.out'
-    });
-    
-    gsap.to('.line2', {
-      x: -moveX * 0.5,
-      y: -moveY * 0.5,
-      duration: 1,
-      ease: 'power2.out'
-    });
-  });
+  // Subtle mouse parallax for hero title - merged into the main mousemove handler above
   
   // Ensure nav links are visible
   gsap.set('.nav-link', {
@@ -714,6 +844,9 @@ document.addEventListener('DOMContentLoaded', function() {
   let volcanoMode = false;
   let spaceMode = false;
   let jungleMode = false;
+  let volcanoEmberRAF = null;
+  let spaceCanvasRAF  = null;
+  let jungleCanvasRAF = null;
   
   // Debug logging
   console.log('🎮 Mode system initialized');
@@ -766,55 +899,127 @@ document.addEventListener('DOMContentLoaded', function() {
   let volcanoScrollListener = null;
   let volcanoHoverListener = null;
   
+  // ---- DRAMATIC MODE TRANSITION FLASH ----
+  function playModeDramaticTransition(color, label, emoji, onMid) {
+    // Remove any lingering flash
+    const old = document.getElementById('mode-transition-flash');
+    if (old) old.remove();
+
+    const flash = document.createElement('div');
+    flash.id = 'mode-transition-flash';
+    flash.innerHTML = `<div class="mtf-inner"><span class="mtf-emoji">${emoji}</span><span class="mtf-label">${label}</span></div>`;
+    flash.style.cssText = `
+      position:fixed;inset:0;z-index:99999;pointer-events:none;
+      display:flex;align-items:center;justify-content:center;
+      background:${color};
+      opacity:0;
+    `;
+    flash.querySelector('.mtf-inner').style.cssText = `
+      display:flex;flex-direction:column;align-items:center;gap:0.5rem;
+      transform:scale(0.6);opacity:0;transition:all 0s;
+    `;
+    document.body.appendChild(flash);
+
+    // Style the text
+    const inner = flash.querySelector('.mtf-inner');
+    const emojiEl = flash.querySelector('.mtf-emoji');
+    const labelEl = flash.querySelector('.mtf-label');
+    emojiEl.style.cssText = 'font-size:6rem;line-height:1;filter:drop-shadow(0 0 40px rgba(255,255,255,0.8));';
+    labelEl.style.cssText = `
+      font-family:'Syne',sans-serif;font-size:clamp(2rem,6vw,5rem);font-weight:800;
+      letter-spacing:0.1em;text-transform:uppercase;color:#fff;
+      text-shadow:0 0 60px rgba(255,255,255,0.6);
+    `;
+
+    const tl = gsap.timeline({ onComplete: () => flash.remove() });
+    tl.to(flash, { opacity: 1, duration: 0.18, ease: 'power3.in' })
+      .to(inner, { scale: 1, opacity: 1, duration: 0.25, ease: 'back.out(2)' }, '<0.05')
+      .call(onMid)
+      .to(flash, { opacity: 0, duration: 0.55, ease: 'power3.out', delay: 0.35 })
+      .to(inner, { scale: 1.15, opacity: 0, duration: 0.4, ease: 'power2.in' }, '<');
+  }
+
   function activateVolcanoInteractions() {
     // Screen shake on scroll
     volcanoScrollListener = () => {
       document.body.classList.add('scrolling');
-      setTimeout(() => {
-        document.body.classList.remove('scrolling');
-      }, 300);
+      setTimeout(() => { document.body.classList.remove('scrolling'); }, 300);
     };
-    
     let scrollTimeout;
     window.addEventListener('scroll', () => {
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(volcanoScrollListener, 50);
     }, { passive: true });
-    
-    // Heat-based cursor effect
-    volcanoHoverListener = (e) => {
-      const heatRipple = document.createElement('div');
-      heatRipple.style.cssText = `
-        position: fixed;
-        left: ${e.clientX}px;
-        top: ${e.clientY}px;
-        width: 40px;
-        height: 40px;
-        background: radial-gradient(circle, rgba(255, 69, 0, 0.4), transparent);
-        border-radius: 50%;
-        pointer-events: none;
-        z-index: 9998;
-        transform: translate(-50%, -50%);
-      `;
-      document.body.appendChild(heatRipple);
-      
-      gsap.to(heatRipple, {
-        scale: 3,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power2.out',
-        onComplete: () => heatRipple.remove()
+
+    // --- EMBER PARTICLE CANVAS TRAIL ---
+    const canvas = document.createElement('canvas');
+    canvas.id = 'volcano-ember-canvas';
+    canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9997;';
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+
+    const embers = [];
+    let mouseX = -999, mouseY = -999;
+
+    volcanoHoverListener = (e) => { mouseX = e.clientX; mouseY = e.clientY; };
+    document.addEventListener('mousemove', volcanoHoverListener);
+
+    function spawnEmber() {
+      const spread = 14;
+      embers.push({
+        x: mouseX + (Math.random() - 0.5) * spread,
+        y: mouseY + (Math.random() - 0.5) * spread,
+        vx: (Math.random() - 0.5) * 2.2,
+        vy: -(Math.random() * 3 + 1),
+        life: 1,
+        decay: 0.018 + Math.random() * 0.022,
+        r: 1.5 + Math.random() * 2.5,
+        hue: 10 + Math.floor(Math.random() * 30),
       });
-    };
-    
-    document.addEventListener('click', volcanoHoverListener);
+    }
+
+    let frameCount = 0;
+    function emberLoop() {
+      if (!document.getElementById('volcano-ember-canvas')) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      frameCount++;
+      if (frameCount % 2 === 0 && mouseX > 0) { spawnEmber(); spawnEmber(); }
+
+      for (let i = embers.length - 1; i >= 0; i--) {
+        const p = embers[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.08;          // gravity
+        p.vx *= 0.98;
+        p.life -= p.decay;
+        if (p.life <= 0) { embers.splice(i, 1); continue; }
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue},100%,${55 + p.life * 20}%,${p.life * 0.9})`;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = `hsl(${p.hue},100%,60%)`;
+        ctx.fill();
+      }
+      ctx.shadowBlur = 0;
+      volcanoEmberRAF = requestAnimationFrame(emberLoop);
+    }
+    volcanoEmberRAF = requestAnimationFrame(emberLoop);
+
+    window.addEventListener('resize', () => {
+      if (canvas) { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    });
   }
-  
+
   function deactivateVolcanoInteractions() {
     if (volcanoHoverListener) {
-      document.removeEventListener('click', volcanoHoverListener);
+      document.removeEventListener('mousemove', volcanoHoverListener);
       volcanoHoverListener = null;
     }
+    if (volcanoEmberRAF) { cancelAnimationFrame(volcanoEmberRAF); volcanoEmberRAF = null; }
+    const c = document.getElementById('volcano-ember-canvas');
+    if (c) c.remove();
   }
   
   // VOLCANO EXPERIENCE - Press SPACE (Toggle)
@@ -838,56 +1043,23 @@ document.addEventListener('DOMContentLoaded', function() {
       
       volcanoMode = !volcanoMode;
       console.log('🌋 Volcano mode toggled to:', volcanoMode);
-      sendLog('H1', 'Volcano toggle', { volcanoMode }, 'script.js:VOLCANO');
       
       if (volcanoMode) {
         // Activate volcano mode with video
-        sendLog('H1', 'Volcano activated', {}, 'script.js:VOLCANO');
-        
-        // Activate volcano interactions
         activateVolcanoInteractions();
-        
-        // Smooth transition overlay
-        const transitionOverlay = document.createElement('div');
-        transitionOverlay.style.cssText = `
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: radial-gradient(circle at center, rgba(255, 69, 0, 0.3), rgba(139, 0, 0, 0.5));
-          z-index: 9999;
-          pointer-events: none;
-          opacity: 0;
-        `;
-        document.body.appendChild(transitionOverlay);
-        
-        gsap.to(transitionOverlay, {
-          opacity: 1,
-          duration: 0.4,
-          ease: 'power2.in',
-          onComplete: () => {
-            // Add volcano theme class to body
+
+        playModeDramaticTransition(
+          'radial-gradient(circle at center, rgba(255,69,0,0.65), rgba(100,10,0,0.9))',
+          'VOLCANO', '🌋',
+          () => {
             document.body.classList.add('volcano-theme');
-            
-            // Change subtitle text
             const heroSubtitle = document.querySelector('.hero-subtitle');
             if (heroSubtitle) {
-              if (!heroSubtitle.dataset.originalText) {
-                heroSubtitle.dataset.originalText = heroSubtitle.textContent;
-              }
+              if (!heroSubtitle.dataset.originalText) heroSubtitle.dataset.originalText = heroSubtitle.textContent;
               heroSubtitle.textContent = 'Eruption Engineer of Pixels & Code | Freelancer';
             }
-            
-            gsap.to(transitionOverlay, {
-              opacity: 0,
-              duration: 0.6,
-              ease: 'power2.out',
-              delay: 0.2,
-              onComplete: () => transitionOverlay.remove()
-            });
           }
-        });
+        );
         
         // Create video overlay
         const videoOverlay = document.createElement('div');
@@ -972,53 +1144,16 @@ document.addEventListener('DOMContentLoaded', function() {
         showKeyboardShortcut('SPACE', '🌋 VOLCANO MODE');
       } else {
         // Deactivate volcano mode
-        sendLog('H1', 'Volcano deactivated', {}, 'script.js:VOLCANO');
-        
-        // Smooth transition overlay
-        const transitionOverlay = document.createElement('div');
-        transitionOverlay.style.cssText = `
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: radial-gradient(circle at center, rgba(10, 10, 15, 0.8), rgba(0, 0, 0, 0.9));
-          z-index: 9999;
-          pointer-events: none;
-          opacity: 0;
-        `;
-        document.body.appendChild(transitionOverlay);
-        
-        gsap.to(transitionOverlay, {
-          opacity: 1,
-          duration: 0.4,
-          ease: 'power2.in',
-          onComplete: () => {
-            // Deactivate volcano interactions
-            deactivateVolcanoInteractions();
-            
-            // Remove volcano theme class
-            document.body.classList.remove('volcano-theme');
-            
-            const videoOverlay = document.getElementById('volcano-video-overlay');
-            if (videoOverlay) videoOverlay.remove();
-            
-            gsap.to(transitionOverlay, {
-              opacity: 0,
-              duration: 0.6,
-              ease: 'power2.out',
-              delay: 0.2,
-              onComplete: () => transitionOverlay.remove()
-            });
-          }
+        playModeDramaticTransition('rgba(0,0,0,0.85)', 'OFF', '✖', () => {
+          deactivateVolcanoInteractions();
+          document.body.classList.remove('volcano-theme');
+          const videoOverlay = document.getElementById('volcano-video-overlay');
+          if (videoOverlay) videoOverlay.remove();
+          const indicator = document.getElementById('volcano-indicator');
+          if (indicator) indicator.remove();
+          const heroSubtitle = document.querySelector('.hero-subtitle');
+          if (heroSubtitle && heroSubtitle.dataset.originalText) heroSubtitle.textContent = heroSubtitle.dataset.originalText;
         });
-        
-        const indicator = document.getElementById('volcano-indicator');
-        if (indicator) {
-          indicator.style.opacity = '0';
-          indicator.style.transform = 'translateY(20px)';
-          setTimeout(() => indicator.remove(), 400);
-        }
       }
     }
   });
@@ -1029,56 +1164,126 @@ document.addEventListener('DOMContentLoaded', function() {
   let spaceFloatInterval = null;
   
   function activateSpaceInteractions() {
-    // Subtle zero-gravity float effect on cards only
-    const floatElements = document.querySelectorAll('.bento-item, .project-card');
-    floatElements.forEach((el, index) => {
+    // --- ZERO-GRAVITY FLOATING ELEMENTS ---
+    const floatTargets = document.querySelectorAll(
+      '.section-title, .proj-row-title, .about-stat-num, .client-row-name, .tech-item, .hotkey-btn'
+    );
+    floatTargets.forEach((el, i) => {
+      const amp = 6 + Math.random() * 14;
+      const dur = 3.5 + Math.random() * 4;
       gsap.to(el, {
-        y: '+=8',
-        duration: 4 + Math.random() * 2,
+        y: `+=${amp}`,
+        x: `+=${(Math.random()-0.5)*8}`,
+        rotation: (Math.random()-0.5)*3,
+        duration: dur,
         repeat: -1,
         yoyo: true,
         ease: 'sine.inOut',
-        delay: index * 0.3
+        delay: i * 0.18,
       });
     });
-    
-    // Subtle parallax on mouse move
+
+    // --- LASER BEAM CURSOR TRAIL ---
+    const laserCanvas = document.createElement('canvas');
+    laserCanvas.id = 'space-laser-canvas';
+    laserCanvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9997;';
+    laserCanvas.width  = window.innerWidth;
+    laserCanvas.height = window.innerHeight;
+    document.body.appendChild(laserCanvas);
+    const lctx = laserCanvas.getContext('2d');
+
+    const laserPoints = [];
+    const MAX_POINTS = 40;
+    let lMouseX = -999, lMouseY = -999;
+
     spaceHoverListener = (e) => {
-      const moveX = (e.clientX - window.innerWidth / 2) * 0.005;
-      const moveY = (e.clientY - window.innerHeight / 2) * 0.005;
-      
-      document.querySelectorAll('.bento-item, .project-card').forEach((el, index) => {
-        const depth = (index % 3 + 1) * 0.3;
-        gsap.to(el, {
-          x: moveX * depth,
-          y: moveY * depth,
-          duration: 1.2,
-          ease: 'power1.out'
-        });
-      });
+      lMouseX = e.clientX; lMouseY = e.clientY;
+      laserPoints.push({ x: lMouseX, y: lMouseY, age: 0 });
+      if (laserPoints.length > MAX_POINTS) laserPoints.shift();
+
+      // --- STAR PARALLAX ---
+      const starsEl = document.getElementById('space-stars-container');
+      if (starsEl) {
+        const px = (e.clientX / window.innerWidth  - 0.5) * 30;
+        const py = (e.clientY / window.innerHeight - 0.5) * 30;
+        starsEl.style.transform = `translate(${px}px, ${py}px)`;
+      }
     };
-    
     document.addEventListener('mousemove', spaceHoverListener);
+
+    function laserLoop() {
+      if (!document.getElementById('space-laser-canvas')) return;
+      lctx.clearRect(0, 0, laserCanvas.width, laserCanvas.height);
+
+      for (let i = 0; i < laserPoints.length; i++) {
+        laserPoints[i].age++;
+      }
+      // Remove old points
+      while (laserPoints.length && laserPoints[0].age > MAX_POINTS) laserPoints.shift();
+
+      if (laserPoints.length > 1) {
+        lctx.beginPath();
+        lctx.moveTo(laserPoints[0].x, laserPoints[0].y);
+        for (let i = 1; i < laserPoints.length; i++) {
+          const t = i / laserPoints.length;
+          lctx.lineTo(laserPoints[i].x, laserPoints[i].y);
+        }
+        // Outer glow
+        lctx.strokeStyle = 'rgba(0,200,255,0.12)';
+        lctx.lineWidth = 10;
+        lctx.lineCap = 'round';
+        lctx.lineJoin = 'round';
+        lctx.stroke();
+        // Inner beam
+        const grad = lctx.createLinearGradient(
+          laserPoints[0].x, laserPoints[0].y,
+          laserPoints[laserPoints.length-1].x, laserPoints[laserPoints.length-1].y
+        );
+        grad.addColorStop(0, 'rgba(0,200,255,0)');
+        grad.addColorStop(1, 'rgba(180,240,255,0.95)');
+        lctx.strokeStyle = grad;
+        lctx.lineWidth = 2;
+        lctx.shadowBlur = 16;
+        lctx.shadowColor = '#00d0ff';
+        lctx.stroke();
+        lctx.shadowBlur = 0;
+      }
+
+      // Cursor glow dot
+      if (lMouseX > 0) {
+        lctx.beginPath();
+        lctx.arc(lMouseX, lMouseY, 4, 0, Math.PI * 2);
+        lctx.fillStyle = 'rgba(180,240,255,0.9)';
+        lctx.shadowBlur = 18;
+        lctx.shadowColor = '#00d0ff';
+        lctx.fill();
+        lctx.shadowBlur = 0;
+      }
+
+      spaceCanvasRAF = requestAnimationFrame(laserLoop);
+    }
+    spaceCanvasRAF = requestAnimationFrame(laserLoop);
+
+    window.addEventListener('resize', () => {
+      if (laserCanvas) { laserCanvas.width = window.innerWidth; laserCanvas.height = window.innerHeight; }
+    });
   }
-  
+
   function deactivateSpaceInteractions() {
     if (spaceHoverListener) {
       document.removeEventListener('mousemove', spaceHoverListener);
       spaceHoverListener = null;
     }
-    if (spaceFloatInterval) {
-      clearInterval(spaceFloatInterval);
-      spaceFloatInterval = null;
-    }
-    
-    // Kill all floating animations
-    gsap.killTweensOf('.bento-item, .project-card, .hero-title, .section-title, .tech-item');
-    
-    // Reset all element positions
-    const elements = document.querySelectorAll('.bento-item, .project-card, .tech-item, .hero-title, .section-title');
-    elements.forEach(el => {
-      gsap.to(el, { x: 0, y: 0, duration: 0.5 });
-    });
+    if (spaceCanvasRAF) { cancelAnimationFrame(spaceCanvasRAF); spaceCanvasRAF = null; }
+    const lc = document.getElementById('space-laser-canvas');
+    if (lc) lc.remove();
+    const starsEl = document.getElementById('space-stars-container');
+    if (starsEl) starsEl.style.transform = '';
+    if (spaceFloatInterval) { clearInterval(spaceFloatInterval); spaceFloatInterval = null; }
+    // Kill float tweens and reset
+    gsap.killTweensOf('.section-title, .proj-row-title, .about-stat-num, .client-row-name, .tech-item, .hotkey-btn');
+    document.querySelectorAll('.section-title, .proj-row-title, .about-stat-num, .client-row-name, .tech-item, .hotkey-btn')
+      .forEach(el => gsap.to(el, { y: 0, x: 0, rotation: 0, duration: 0.8, ease: 'power2.out' }));
   }
   
   // SPACE EXPERIENCE - Press 'E'
@@ -1097,52 +1302,21 @@ document.addEventListener('DOMContentLoaded', function() {
       
       spaceMode = true;
       console.log('🚀 Space mode activated:', spaceMode);
-      sendLog('H2', 'Space activated', {}, 'script.js:SPACE');
       
-      // Activate space interactions
       activateSpaceInteractions();
-      
-      // Smooth transition overlay
-      const transitionOverlay = document.createElement('div');
-      transitionOverlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(circle at center, rgba(0, 255, 255, 0.2), rgba(0, 0, 50, 0.5));
-        z-index: 9999;
-        pointer-events: none;
-        opacity: 0;
-      `;
-      document.body.appendChild(transitionOverlay);
-      
-      gsap.to(transitionOverlay, {
-        opacity: 1,
-        duration: 0.4,
-        ease: 'power2.in',
-        onComplete: () => {
-          // Add space theme class to body
+
+      playModeDramaticTransition(
+        'radial-gradient(circle at center, rgba(0,80,160,0.7), rgba(0,0,30,0.95))',
+        'SPACE MODE', '🚀',
+        () => {
           document.body.classList.add('space-theme');
-          
-          // Change subtitle text
           const heroSubtitle = document.querySelector('.hero-subtitle');
           if (heroSubtitle) {
-            if (!heroSubtitle.dataset.originalText) {
-              heroSubtitle.dataset.originalText = heroSubtitle.textContent;
-            }
+            if (!heroSubtitle.dataset.originalText) heroSubtitle.dataset.originalText = heroSubtitle.textContent;
             heroSubtitle.textContent = 'Stellar Alchemist of Experiences | Freelancer';
           }
-          
-          gsap.to(transitionOverlay, {
-            opacity: 0,
-            duration: 0.6,
-            ease: 'power2.out',
-            delay: 0.2,
-            onComplete: () => transitionOverlay.remove()
-          });
         }
-      });
+      );
       
       // Create video overlay
       const videoOverlay = document.createElement('div');
@@ -1267,56 +1441,15 @@ document.addEventListener('DOMContentLoaded', function() {
       }, 100);
     } else if (e.key.toLowerCase() === 'e' && spaceMode && !e.repeat && !isInInput) {
       spaceMode = false;
-      sendLog('H2', 'Space deactivated', {}, 'script.js:SPACE');
-      
-      // Smooth transition overlay
-      const transitionOverlay = document.createElement('div');
-      transitionOverlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(circle at center, rgba(10, 10, 15, 0.8), rgba(0, 0, 0, 0.9));
-        z-index: 9999;
-        pointer-events: none;
-        opacity: 0;
-      `;
-      document.body.appendChild(transitionOverlay);
-      
-      gsap.to(transitionOverlay, {
-        opacity: 1,
-        duration: 0.4,
-        ease: 'power2.in',
-        onComplete: () => {
-          // Deactivate space interactions
-          deactivateSpaceInteractions();
-          
-          // Remove space theme class
-          document.body.classList.remove('space-theme');
-          
-          const videoOverlay = document.getElementById('space-video-overlay');
-          if (videoOverlay) videoOverlay.remove();
-          
-          const starsContainer = document.getElementById('space-stars-container');
-          if (starsContainer) starsContainer.remove();
-          
-          gsap.to(transitionOverlay, {
-            opacity: 0,
-            duration: 0.6,
-            ease: 'power2.out',
-            delay: 0.2,
-            onComplete: () => transitionOverlay.remove()
-          });
-        }
+      playModeDramaticTransition('rgba(0,0,0,0.9)', 'OFF', '✖', () => {
+        deactivateSpaceInteractions();
+        document.body.classList.remove('space-theme');
+        const vo = document.getElementById('space-video-overlay'); if (vo) vo.remove();
+        const sc = document.getElementById('space-stars-container'); if (sc) sc.remove();
+        const si = document.getElementById('space-indicator'); if (si) si.remove();
+        const heroSubtitle = document.querySelector('.hero-subtitle');
+        if (heroSubtitle && heroSubtitle.dataset.originalText) heroSubtitle.textContent = heroSubtitle.dataset.originalText;
       });
-      
-      const indicator = document.getElementById('space-indicator');
-      if (indicator) {
-        indicator.style.opacity = '0';
-        indicator.style.transform = 'translateY(20px)';
-        setTimeout(() => indicator.remove(), 400);
-      }
     }
   });
   
@@ -1327,51 +1460,118 @@ document.addEventListener('DOMContentLoaded', function() {
   let jungleScrollListener = null;
   
   function activateJungleInteractions() {
-    // Subtle breathing effect on cards only
-    const elements = document.querySelectorAll('.bento-item, .project-card');
-    elements.forEach((el, index) => {
-      gsap.to(el, {
-        scale: 1.01,
-        duration: 3 + Math.random(),
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
-        delay: index * 0.2
+    // Kill any leftover space-mode float tweens and hard-reset transforms
+    gsap.killTweensOf('.section-title, .proj-row-title, .about-stat-num, .client-row-name, .tech-item, .hotkey-btn');
+    document.querySelectorAll('.section-title, .proj-row-title, .about-stat-num, .client-row-name, .tech-item, .hotkey-btn')
+      .forEach(el => gsap.set(el, { clearProps: 'x,y,rotation,transform' }));
+
+    // --- RAIN CANVAS ---
+    const rainCanvas = document.createElement('canvas');
+    rainCanvas.id = 'jungle-rain-canvas';
+    rainCanvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9996;';
+    rainCanvas.width  = window.innerWidth;
+    rainCanvas.height = window.innerHeight;
+    document.body.appendChild(rainCanvas);
+    const rctx = rainCanvas.getContext('2d');
+
+    const drops = [];
+    const DROP_COUNT = 120;
+    for (let i = 0; i < DROP_COUNT; i++) {
+      drops.push({
+        x: Math.random() * rainCanvas.width,
+        y: Math.random() * rainCanvas.height,
+        len: 8 + Math.random() * 18,
+        speed: 4 + Math.random() * 7,
+        opacity: 0.12 + Math.random() * 0.25,
+        width: 0.6 + Math.random() * 0.8,
       });
-    });
-    
-    // Subtle wind-driven parallax
-    jungleHoverListener = (e) => {
-      const moveX = (e.clientX - window.innerWidth / 2) * 0.008;
-      const moveY = (e.clientY - window.innerHeight / 2) * 0.008;
-      
-      document.querySelectorAll('.bento-item, .project-card').forEach((el, index) => {
-        const depth = (index % 3 + 1) * 0.4;
-        gsap.to(el, {
-          x: moveX * depth,
-          y: moveY * depth,
-          duration: 1,
-          ease: 'power1.out'
-        });
-      });
-    };
-    
+    }
+
+    // --- LEAF CURSOR TRAIL ---
+    const leaves = [];
+    let jMouseX = -999, jMouseY = -999;
+    jungleHoverListener = (e) => { jMouseX = e.clientX; jMouseY = e.clientY; };
     document.addEventListener('mousemove', jungleHoverListener);
+
+    function spawnLeaf() {
+      leaves.push({
+        x: jMouseX, y: jMouseY,
+        vx: (Math.random() - 0.5) * 3,
+        vy: -(Math.random() * 2 + 0.5),
+        rot: Math.random() * 360,
+        vrot: (Math.random() - 0.5) * 8,
+        life: 1,
+        decay: 0.02 + Math.random() * 0.015,
+        size: 5 + Math.random() * 6,
+      });
+    }
+
+    let jFrame = 0;
+    function jungleLoop() {
+      if (!document.getElementById('jungle-rain-canvas')) return;
+      rctx.clearRect(0, 0, rainCanvas.width, rainCanvas.height);
+
+      // Rain
+      rctx.strokeStyle = 'rgba(100,220,80,0.18)';
+      for (const d of drops) {
+        d.y += d.speed;
+        d.x += d.speed * 0.15;   // slight angle
+        if (d.y > rainCanvas.height) { d.y = -d.len; d.x = Math.random() * rainCanvas.width; }
+        rctx.globalAlpha = d.opacity;
+        rctx.lineWidth = d.width;
+        rctx.beginPath();
+        rctx.moveTo(d.x, d.y);
+        rctx.lineTo(d.x + d.len * 0.15, d.y + d.len);
+        rctx.stroke();
+      }
+      rctx.globalAlpha = 1;
+
+      // Leaf spawning
+      jFrame++;
+      if (jFrame % 3 === 0 && jMouseX > 0) spawnLeaf();
+
+      // Draw leaves as simple ovals
+      for (let i = leaves.length - 1; i >= 0; i--) {
+        const lf = leaves[i];
+        lf.x += lf.vx;
+        lf.y += lf.vy;
+        lf.vy += 0.04;
+        lf.vx *= 0.99;
+        lf.rot += lf.vrot;
+        lf.life -= lf.decay;
+        if (lf.life <= 0) { leaves.splice(i, 1); continue; }
+        rctx.save();
+        rctx.translate(lf.x, lf.y);
+        rctx.rotate((lf.rot * Math.PI) / 180);
+        rctx.globalAlpha = lf.life * 0.85;
+        rctx.beginPath();
+        rctx.ellipse(0, 0, lf.size, lf.size * 0.45, 0, 0, Math.PI * 2);
+        rctx.fillStyle = `hsl(${110 + Math.random()*30},70%,45%)`;
+        rctx.shadowBlur = 6;
+        rctx.shadowColor = 'rgba(100,220,80,0.5)';
+        rctx.fill();
+        rctx.restore();
+      }
+      rctx.globalAlpha = 1;
+      rctx.shadowBlur = 0;
+
+      jungleCanvasRAF = requestAnimationFrame(jungleLoop);
+    }
+    jungleCanvasRAF = requestAnimationFrame(jungleLoop);
+
+    window.addEventListener('resize', () => {
+      if (rainCanvas) { rainCanvas.width = window.innerWidth; rainCanvas.height = window.innerHeight; }
+    });
   }
-  
+
   function deactivateJungleInteractions() {
     if (jungleHoverListener) {
       document.removeEventListener('mousemove', jungleHoverListener);
       jungleHoverListener = null;
     }
-    
-    // Stop all breathing animations
-    gsap.killTweensOf('.bento-item, .project-card');
-    
-    // Reset positions
-    document.querySelectorAll('.bento-item, .project-card').forEach(el => {
-      gsap.to(el, { x: 0, y: 0, scale: 1, duration: 0.5 });
-    });
+    if (jungleCanvasRAF) { cancelAnimationFrame(jungleCanvasRAF); jungleCanvasRAF = null; }
+    const rc = document.getElementById('jungle-rain-canvas');
+    if (rc) rc.remove();
   }
   
   // JUNGLE EXPERIENCE - Press 'J'
@@ -1390,52 +1590,21 @@ document.addEventListener('DOMContentLoaded', function() {
       
       jungleMode = true;
       console.log('🌿 Jungle mode activated:', jungleMode);
-      sendLog('H3', 'Jungle activated', {}, 'script.js:JUNGLE');
       
-      // Activate jungle interactions
       activateJungleInteractions();
-      
-      // Smooth transition overlay
-      const transitionOverlay = document.createElement('div');
-      transitionOverlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(circle at center, rgba(0, 255, 0, 0.2), rgba(0, 50, 0, 0.5));
-        z-index: 9999;
-        pointer-events: none;
-        opacity: 0;
-      `;
-      document.body.appendChild(transitionOverlay);
-      
-      gsap.to(transitionOverlay, {
-        opacity: 1,
-        duration: 0.4,
-        ease: 'power2.in',
-        onComplete: () => {
-          // Add jungle theme class to body
+
+      playModeDramaticTransition(
+        'radial-gradient(circle at center, rgba(0,100,0,0.6), rgba(0,30,0,0.95))',
+        'JUNGLE MODE', '🌿',
+        () => {
           document.body.classList.add('jungle-theme');
-          
-          // Change subtitle text
           const heroSubtitle = document.querySelector('.hero-subtitle');
           if (heroSubtitle) {
-            if (!heroSubtitle.dataset.originalText) {
-              heroSubtitle.dataset.originalText = heroSubtitle.textContent;
-            }
+            if (!heroSubtitle.dataset.originalText) heroSubtitle.dataset.originalText = heroSubtitle.textContent;
             heroSubtitle.textContent = 'Wild-Crafted Creator of Digital Ecosystems | Freelancer';
           }
-          
-          gsap.to(transitionOverlay, {
-            opacity: 0,
-            duration: 0.6,
-            ease: 'power2.out',
-            delay: 0.2,
-            onComplete: () => transitionOverlay.remove()
-          });
         }
-      });
+      );
       
       // Create video overlay
       const videoOverlay = document.createElement('div');
@@ -1519,69 +1688,58 @@ document.addEventListener('DOMContentLoaded', function() {
       showKeyboardShortcut('J', '🌿 JUNGLE MODE');
     } else if (e.key.toLowerCase() === 'j' && jungleMode && !e.repeat && !isInInput) {
       jungleMode = false;
-      sendLog('H3', 'Jungle deactivated', {}, 'script.js:JUNGLE');
-      
-      // Smooth transition overlay
-      const transitionOverlay = document.createElement('div');
-      transitionOverlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(circle at center, rgba(10, 10, 15, 0.8), rgba(0, 0, 0, 0.9));
-        z-index: 9999;
-        pointer-events: none;
-        opacity: 0;
-      `;
-      document.body.appendChild(transitionOverlay);
-      
-      gsap.to(transitionOverlay, {
-        opacity: 1,
-        duration: 0.4,
-        ease: 'power2.in',
-        onComplete: () => {
-          // Deactivate jungle interactions
-          deactivateJungleInteractions();
-          
-          // Remove jungle theme class
-          document.body.classList.remove('jungle-theme');
-          
-          const videoOverlay = document.getElementById('jungle-video-overlay');
-          if (videoOverlay) videoOverlay.remove();
-          
-          gsap.to(transitionOverlay, {
-            opacity: 0,
-            duration: 0.6,
-            ease: 'power2.out',
-            delay: 0.2,
-            onComplete: () => transitionOverlay.remove()
-          });
-        }
+      playModeDramaticTransition('rgba(0,0,0,0.9)', 'OFF', '✖', () => {
+        deactivateJungleInteractions();
+        document.body.classList.remove('jungle-theme');
+        const vo = document.getElementById('jungle-video-overlay'); if (vo) vo.remove();
+        const ji = document.getElementById('jungle-indicator'); if (ji) ji.remove();
+        const heroSubtitle = document.querySelector('.hero-subtitle');
+        if (heroSubtitle && heroSubtitle.dataset.originalText) heroSubtitle.textContent = heroSubtitle.dataset.originalText;
       });
-      
-      const indicator = document.getElementById('jungle-indicator');
-      if (indicator) {
-        indicator.style.opacity = '0';
-        indicator.style.transform = 'translateY(20px)';
-        setTimeout(() => indicator.remove(), 400);
-      }
     }
   });
   
+  // ---- SCROLL PROGRESS BAR ----
+  const scrollBar = document.createElement('div');
+  scrollBar.id = 'scroll-progress';
+  document.body.appendChild(scrollBar);
+  window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    scrollBar.style.width = (docHeight > 0 ? (scrollTop / docHeight) * 100 : 0) + '%';
+  }, { passive: true });
+
+  // ---- data-text for glitch / chromatic aberration ----
+  document.querySelectorAll('.section-title, .proj-row-title').forEach(el => {
+    el.dataset.text = el.textContent.trim();
+  });
+
+  // Volcano: add glitch-active class on section-title mouseenter
+  document.querySelectorAll('.section-title').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      if (document.body.classList.contains('volcano-theme')) el.classList.add('glitch-active');
+    });
+    el.addEventListener('mouseleave', () => el.classList.remove('glitch-active'));
+  });
+
+  // ---- MAGNETIC ROWS — subtle cursor pull toward proj-row center ----
+  document.querySelectorAll('.proj-row').forEach(row => {
+    row.addEventListener('mousemove', (e) => {
+      const rect = row.getBoundingClientRect();
+      const cx = rect.left + rect.width  / 2;
+      const cy = rect.top  + rect.height / 2;
+      const dx = (e.clientX - cx) / rect.width;   // -0.5 to 0.5
+      const dy = (e.clientY - cy) / rect.height;
+      row.style.transform = `translateX(${4 + dx * 6}px) translateY(${dy * 4}px)`;
+    });
+    row.addEventListener('mouseleave', () => {
+      row.style.transform = '';
+    });
+  });
+
   // Right-click orbs feature removed
   
-  // UNEXPECTED: Mouse wheel to change background intensity
-  let bgIntensity = 0.3;
-  document.addEventListener('wheel', (e) => {
-    if (e.deltaY > 0) {
-      bgIntensity = Math.min(1, bgIntensity + 0.05);
-    } else {
-      bgIntensity = Math.max(0.1, bgIntensity - 0.05);
-    }
-    
-    document.body.style.setProperty('--bg-intensity', bgIntensity);
-  }, { passive: true });
+  // Background intensity feature removed to avoid scroll interference
   
   // Hide hint after 10 seconds
   setTimeout(() => {
@@ -1599,16 +1757,8 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // FUNCTIONALITY IMPROVEMENTS
   
-  // 1. Prevent default space scroll behavior globally
-  window.addEventListener('keydown', (e) => {
-    // Prevent space scroll only if not in an input field
-    if (e.code === 'Space' && 
-        e.target.tagName !== 'INPUT' && 
-        e.target.tagName !== 'TEXTAREA' && 
-        !e.target.isContentEditable) {
-      e.preventDefault();
-    }
-  }, { passive: false });
+  // 1. Prevent default space scroll behavior only when volcano mode is toggling
+  // (The volcano keydown handler already calls preventDefault when Space is pressed)
   
   // 2. Smooth scroll performance optimization
   let scrollTimeout;
@@ -1651,8 +1801,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   preloadVideos.forEach(src => {
     const link = document.createElement('link');
-    link.rel = 'preload';
-    link.as = 'video';
+    link.rel = 'prefetch';
     link.href = src;
     document.head.appendChild(link);
   });
@@ -1734,22 +1883,21 @@ document.addEventListener('DOMContentLoaded', function() {
   }, { passive: true });
   
   // 8. Smooth reveal animations for sections
-  const revealElements = document.querySelectorAll('.bento-item, .project-card, .tech-item');
+  const revealElements = document.querySelectorAll('.bento-item, .proj-row');
   const revealObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry, index) => {
+    entries.forEach((entry) => {
       if (entry.isIntersecting) {
         gsap.to(entry.target, {
           opacity: 1,
           y: 0,
           duration: 0.8,
-          delay: index * 0.08,
           ease: 'power3.out'
         });
         revealObserver.unobserve(entry.target);
       }
     });
   }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-  
+
   revealElements.forEach(el => {
     gsap.set(el, { opacity: 0, y: 40 });
     revealObserver.observe(el);
