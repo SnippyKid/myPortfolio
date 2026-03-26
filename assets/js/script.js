@@ -348,7 +348,11 @@ document.addEventListener('DOMContentLoaded', function() {
       requestAnimationFrame(() => preview.classList.add('is-visible'));
       activePreview = preview;
       if (!previewRAF) previewRAF = requestAnimationFrame(lerpPreview);
-      if (video) video.play().catch(() => {});
+      if (video) {
+        video.currentTime = 2;   // skip boring intros
+        video.playbackRate = 1.3; // snappier feel
+        video.play().catch(() => {});
+      }
     });
 
     row.addEventListener('mouseleave', () => {
@@ -356,7 +360,7 @@ document.addEventListener('DOMContentLoaded', function() {
       preview.classList.remove('is-visible');
       preview.style.transform = '';
       activePreview = null;
-      if (video) { video.pause(); video.currentTime = 0; }
+      if (video) { video.pause(); video.currentTime = 2; }
     });
   });
 
@@ -498,19 +502,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // UNEXPECTED: Random glitch effect on scroll
-  let glitchInterval;
+  // Scroll glitch — only shifts text-shadow, never touches transform (keeps centering intact)
   window.addEventListener('scroll', () => {
-    if (Math.random() > 0.98) { // 2% chance on each scroll
+    if (Math.random() > 0.985) {
       const title = document.querySelector('.section-title');
       if (title) {
-        title.style.transform = `translate(${Math.random() * 4 - 2}px, ${Math.random() * 4 - 2}px)`;
-        setTimeout(() => {
-          title.style.transform = 'translateX(-50%)';
-        }, 50);
+        const ox = (Math.random() * 4 - 2).toFixed(1);
+        const oy = (Math.random() * 4 - 2).toFixed(1);
+        title.style.textShadow = `${ox}px ${oy}px 0 rgba(168,85,247,0.7), 0 0 8px rgba(168,85,247,0.3)`;
+        setTimeout(() => { title.style.textShadow = ''; }, 60);
       }
     }
-  });
+  }, { passive: true });
   
   // UNEXPECTED: Bento items rotate slightly on hover of ANY bento item
   const bentoItems = document.querySelectorAll('.bento-item');
@@ -1736,6 +1739,141 @@ document.addEventListener('DOMContentLoaded', function() {
       row.style.transform = '';
     });
   });
+
+  // ---- FOOTER LETTER FLOATING IMAGE CARDS ----
+  (function () {
+    const bigName = document.querySelector('.footer-big-name');
+    if (!bigName) return;
+
+    const letters = Array.from(document.querySelectorAll('.fl-letter'));
+    const allSrcs = letters.map(l => l.dataset.img).filter(Boolean);
+
+    // Card sizes — varied for visual interest
+    const SIZES = [
+      { w: 90,  h: 114 },
+      { w: 110, h: 130 },
+      { w: 78,  h: 96  },
+      { w: 120, h: 102 },
+      { w: 94,  h: 122 },
+    ];
+    const MIN_GAP = 14; // minimum spacing between any two cards
+
+    let liveCards = [];
+
+    function getAccentColor() {
+      if (document.body.classList.contains('volcano-theme')) return 'rgba(255,90,0,0.55)';
+      if (document.body.classList.contains('space-theme'))   return 'rgba(0,195,255,0.5)';
+      if (document.body.classList.contains('jungle-theme'))  return 'rgba(100,230,60,0.5)';
+      return 'rgba(168,85,247,0.45)';
+    }
+
+    // Try to find a non-overlapping position; fall back after max attempts
+    function findPosition(nameRect, w, h, placed) {
+      const pad = 30; // how far cards can extend beyond the name edges
+      const xMin = nameRect.left - pad;
+      const xMax = nameRect.right + pad - w;
+      const yMin = nameRect.top  - h * 0.55; // cards can sit above the text
+      const yMax = nameRect.bottom - h * 0.45; // and partially below
+
+      for (let attempt = 0; attempt < 40; attempt++) {
+        const x = xMin + Math.random() * (xMax - xMin);
+        const y = yMin + Math.random() * (yMax - yMin);
+        let ok = true;
+        for (const p of placed) {
+          const overlapX = x < p.x + p.w + MIN_GAP && x + w + MIN_GAP > p.x;
+          const overlapY = y < p.y + p.h + MIN_GAP && y + h + MIN_GAP > p.y;
+          if (overlapX && overlapY) { ok = false; break; }
+        }
+        if (ok) return { x, y };
+      }
+      // fallback: just place it randomly (rare)
+      return {
+        x: xMin + Math.random() * Math.max(1, xMax - xMin),
+        y: yMin + Math.random() * Math.max(1, yMax - yMin),
+      };
+    }
+
+    function spawnCard(src, x, y, delay, idx) {
+      const size = SIZES[idx % SIZES.length];
+      const rot  = (Math.random() * 22 - 11) * (idx % 2 === 0 ? 1 : -1);
+
+      const card = document.createElement('div');
+      card.className = 'fl-hover-card';
+      card.style.position   = 'fixed';
+      card.style.left       = x + 'px';
+      card.style.top        = y + 'px';
+      card.style.width      = size.w + 'px';
+      card.style.height     = size.h + 'px';
+      card.style.zIndex     = String(100003 + idx);
+      card.style.opacity    = '0';
+      card.style.transform  = `rotate(${rot}deg) translateY(16px) scale(0.8)`;
+      card.style.transition = `opacity 0.3s ease ${delay}ms, transform 0.4s cubic-bezier(0.22,1.55,0.5,1) ${delay}ms`;
+      card.style.borderColor = getAccentColor();
+
+      const img = document.createElement('img');
+      img.src   = src;
+      img.alt   = '';
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+      card.appendChild(img);
+      document.body.appendChild(card);
+
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        card.style.opacity   = '1';
+        card.style.transform = `rotate(${rot}deg) translateY(0px) scale(1)`;
+      }));
+
+      // gentle idle float
+      let dir = 1, fy = 0, raf;
+      function tick() {
+        fy += 0.016 * dir;
+        if (fy > 2.8 || fy < -2.8) dir *= -1;
+        if (card.isConnected) {
+          card.style.transform = `rotate(${rot}deg) translateY(${fy}px) scale(1)`;
+          raf = requestAnimationFrame(tick);
+        }
+      }
+      setTimeout(() => { if (card.isConnected) raf = requestAnimationFrame(tick); }, delay + 420);
+      card._stop = () => cancelAnimationFrame(raf);
+
+      return { card, x, y, w: size.w, h: size.h };
+    }
+
+    function removeAllCards() {
+      liveCards.forEach(({ card }) => {
+        card._stop && card._stop();
+        card.style.transition = 'opacity 0.18s ease, transform 0.18s ease';
+        card.style.opacity    = '0';
+        card.style.transform  = card.style.transform.replace('scale(1)', 'scale(0.85)');
+        setTimeout(() => card.remove(), 200);
+      });
+      liveCards = [];
+    }
+
+    function pickOtherSrcs(hoveredSrc, count) {
+      const others = allSrcs.filter(s => s !== hoveredSrc);
+      return [...others].sort(() => Math.random() - 0.5).slice(0, count);
+    }
+
+    letters.forEach(letter => {
+      letter.addEventListener('mouseenter', () => {
+        removeAllCards();
+        const nameRect   = bigName.getBoundingClientRect();
+        const hoveredSrc = letter.dataset.img;
+        const srcs       = pickOtherSrcs(hoveredSrc, 3);
+        const placed     = [];
+
+        srcs.forEach((src, i) => {
+          const size = SIZES[i % SIZES.length];
+          const pos  = findPosition(nameRect, size.w, size.h, placed);
+          placed.push({ ...pos, w: size.w, h: size.h });
+          const entry = spawnCard(src, pos.x, pos.y, i * 75, i);
+          liveCards.push(entry);
+        });
+      });
+    });
+
+    bigName.addEventListener('mouseleave', removeAllCards);
+  })();
 
   // Right-click orbs feature removed
   
