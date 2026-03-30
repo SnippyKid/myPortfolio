@@ -27,6 +27,11 @@
   box-sizing: border-box;
 }
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 html {
   background-color: var(--primary-bg);
   min-height: 100%;
@@ -1308,17 +1313,21 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem clamp(1rem, 4vw, 3rem);
+  padding: 1.2rem clamp(1rem, 4vw, 2.5rem);
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  z-index: 1000;
+  right: 0;           /* use left+right instead of width:100% — immune to horizontal overflow */
+  width: 100vw;       /* always exactly the viewport */
+  max-width: 100vw;
+  z-index: 10000;
   background: transparent;
   backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   border-bottom: 1px solid rgba(168, 85, 247, 0.1);
   transition: var(--transition);
   box-sizing: border-box;
+  overflow: hidden;   /* prevent any child from stretching it */
 }
 
 /* Mobile Menu Toggle Button */
@@ -2165,6 +2174,8 @@ body.jungle-theme .social-link:hover {
 /* Skills ticker */
 .about-skills-ticker-wrap {
   overflow: hidden;
+  width: 100%;
+  max-width: 100%;
   margin-top: 3rem;
   mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
   -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
@@ -4010,48 +4021,57 @@ body:focus {
 /* ---------- TABLET PORTRAIT (≤768px) ---------- */
 @media (max-width: 768px) {
 
-  /* --- Header & Nav --- */
+  /* --- Header: logo left, hamburger right, nav gone from flow --- */
   header {
     padding: 0.9rem 1.2rem;
-    flex-wrap: nowrap;
-    gap: 0;
+    justify-content: space-between;
   }
 
-  .logo { font-size: 1.3rem; flex-shrink: 0; }
+  .logo {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+    flex-grow: 0;
+  }
   .logo-text { letter-spacing: 1.5px; }
 
-  /* Show hamburger, push it to the right edge */
+  /* Show the hamburger */
   .mobile-menu-toggle {
     display: flex;
     width: 30px;
     height: 30px;
     flex-shrink: 0;
-    margin-left: auto;
-    order: 3;
+    flex-grow: 0;
+    margin-left: 0;
+    padding: 0;
   }
 
-  /* Hide the desktop nav entirely — it will slide in as a drawer */
+  /* Nav is a fixed full-height drawer — not in header flex flow at all */
   nav.main-nav {
-    display: block;
     position: fixed;
     top: 0;
     right: -100%;
+    bottom: 0;
+    left: auto;
     width: min(280px, 80vw);
-    height: 100vh;
-    height: 100dvh;
+    height: 100%;
+    margin: 0;
+    padding: 80px 2rem 2rem;
     background: rgba(10, 10, 15, 0.98);
     backdrop-filter: blur(30px);
     -webkit-backdrop-filter: blur(30px);
     border-left: 1px solid rgba(168, 85, 247, 0.2);
     transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1002;
-    padding: 80px 2rem 2rem;
     overflow-y: auto;
-    /* Remove from normal flow so it doesn't push hamburger */
-    order: 4;
+    overflow-x: hidden;
+    /* Remove from flex layout completely */
+    display: block;
+    align-items: unset;
   }
 
-  nav.main-nav.active { right: 0; }
+  nav.main-nav.active {
+    right: 0;
+  }
 
   nav.main-nav ul {
     flex-direction: column;
